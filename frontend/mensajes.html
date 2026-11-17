@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mensajes y Contactos - AulaConnect</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .avatar-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
+        .chat-box { height: calc(100vh - 365px); min-height: 220px; overflow-y: auto; background-color: #f8f9fa; }
+        .contact-item:hover { background-color: #f1f3f5; cursor: pointer; }
+        .contact-item.active { background-color: #e9ecef; border-left: 4px solid #0d6efd; }
+    </style>
+</head>
+<body>
+
+    <div class="d-flex">
+        <!-- SIDEBAR -->
+        <div id="sidebar-wrapper">
+            <a href="index.html" class="sidebar-heading text-decoration-none">
+                <span>🎓</span> <span>AulaConnect</span>
+            </a>
+            <div class="sidebar-menu pt-3">
+                <div class="menu-label">NAVEGACIÓN</div>
+                <a href="index.html" class="nav-link-custom"><span>🏠</span> Volver al Inicio</a>
+                
+                <div class="menu-label mt-2">MENÚ PRINCIPAL</div>
+                <a href="dashboard.html" class="nav-link-custom"><span>📊</span> Dashboard</a>
+                <a href="explorar.html" class="nav-link-custom"><span>🔍</span> Explorar Asesorías</a>
+                <a href="publicar.html" class="nav-link-custom"><span>➕</span> Publicar Asesoría</a>
+                <a href="solicitudes.html" class="nav-link-custom"><span>📬</span> Mis Solicitudes</a>
+                <a href="perfil.html" class="nav-link-custom"><span>👤</span> Mi Perfil</a>
+
+                <div class="menu-label mt-4">COMUNICACIÓN</div>
+                <a href="mensajes.html" class="nav-link-custom active"><span>💬</span> Mensajes y Chat</a>
+                
+                <div class="menu-label mt-4">SISTEMA</div>
+                <a href="login.html" class="nav-link-custom text-danger" id="btnSesionNav"><span>🔑</span> Cerrar Sesión</a>
+            </div>
+        </div>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <div id="page-content-wrapper">
+            <nav class="top-navbar d-flex justify-content-between align-items-center sticky-top">
+                <div class="fw-bold text-secondary">Centro de Mensajería y Contactos</div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="badge bg-primary-subtle text-primary border px-3 py-2 rounded-pill" id="lblMiCodigo">Mi ID: Cargando...</span>
+                    <div id="areaUsuarioSesion"><span class="fw-bold small text-primary" id="lblUsuario"></span></div>
+                </div>
+            </nav>
+
+            <div class="container-fluid p-4">
+                <div class="row g-4">
+                    <!-- PANEL IZQUIERDO -->
+                    <div class="col-md-4">
+                        <div class="card card-custom h-100 p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold m-0">Conversaciones</h5>
+                                <button class="btn btn-accent btn-sm" data-bs-toggle="modal" data-bs-target="#modalAgregarContacto">➕ Agregar</button>
+                            </div>
+
+                            <div class="input-group mb-3">
+                                <span class="input-group-text bg-light border-end-0 text-muted">🔍</span>
+                                <input type="text" id="inputBuscarContacto" class="form-control bg-light border-start-0 ps-0" placeholder="Buscar contacto...">
+                            </div>
+
+                            <div id="listaContactos" class="flex-grow-1 overflow-auto" style="max-height: 60vh;">
+                                <div class="text-center text-muted py-4 small">Cargando contactos...</div>
+                            </div>
+
+                            <button class="btn btn-outline-secondary btn-sm w-100 mt-3" data-bs-toggle="modal" data-bs-target="#modalGestionContactos">👥 Administrar Mis Contactos</button>
+                        </div>
+                    </div>
+
+                    <!-- PANEL DERECHO: CHAT -->
+                    <div class="col-md-8">
+                        <div class="card card-custom h-100 d-flex flex-column justify-content-between p-3" id="panelChatContainer">
+                            <div id="chatVacio" class="text-center text-muted my-auto py-5">
+                                <h5>💬 Selecciona un contacto para comenzar a chatear</h5>
+                                <p class="small">Aquí aparecerán tus contactos directos y tutores con asesorías aceptadas.</p>
+                            </div>
+
+                            <div id="chatActivo" style="display: none;" class="d-flex flex-column h-100">
+                                <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150" class="avatar-img" alt="Avatar">
+                                        <div>
+                                            <h6 class="fw-bold mb-0" id="chatNombreContacto">Nombre</h6>
+                                            <span class="text-muted small" id="chatInfoContacto">correo@ejemplo.com</span>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-success-subtle text-success border px-2 py-1" id="chatCodigoBadge">ID: -----</span>
+                                </div>
+
+                                <div class="p-2 bg-light rounded mb-2">
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <label class="small fw-semibold mb-0" for="selectorAsesoriaChat">Conversación:</label>
+                                        <select id="selectorAsesoriaChat" class="form-select form-select-sm flex-grow-1" style="min-width:180px;max-width:420px"><option value="">Conversación directa</option></select>
+                                    </div>
+                                    <small class="text-muted d-block mt-1" id="infoAsesoriaChat">Puedes acordar aquí el tema, la fecha, la hora y el lugar o enlace.</small>
+                                </div>
+
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2" aria-label="Mensajes rápidos">
+                                    <small class="text-muted">Iniciar con:</small>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm btnMensajeRapido" data-mensaje="¿Qué tema te gustaría revisar en la asesoría?">Acordar tema</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm btnMensajeRapido" data-mensaje="¿Qué día y hora te vienen bien para reunirnos?">Proponer horario</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm btnMensajeRapido" data-mensaje="Confirmo nuestra sesión. ¿Me compartes el lugar o enlace?">Confirmar lugar o enlace</button>
+                                </div>
+
+                                <div id="cajaMensajes" class="chat-box p-3 rounded mb-3 d-flex flex-column gap-2"></div>
+
+                                <form id="formEnviarMensaje" class="d-flex gap-2">
+                                    <input type="text" id="inputMensajeTexto" class="form-control" placeholder="Escribe un mensaje..." required autocomplete="off">
+                                    <button type="submit" class="btn btn-accent px-4">Enviar 🚀</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AGREGAR -->
+    <div class="modal fade" id="modalAgregarContacto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">➕ Agregar Nuevo Contacto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formAgregarContacto">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Código ID o Correo del usuario</label>
+                            <input type="text" class="form-control" id="inputTerminoBusqueda" placeholder="Ej. 42085 o correo@universidad.mx" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Apodo personalizado (opcional)</label>
+                            <input type="text" class="form-control" id="inputApodoNuevo" placeholder="Ej. Mi Compañero de Equipo">
+                        </div>
+                        <button type="submit" class="btn btn-accent w-100">Buscar y Agregar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GESTIONAR -->
+    <div class="modal fade" id="modalGestionContactos" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">👥 Lista de Contactos y Apodos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nombre Real</th>
+                                    <th>Apodo Privado</th>
+                                    <th>Correo</th>
+                                    <th>ID Única</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaGestionContactos"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL MENSAJE -->
+    <div class="modal fade" id="modalMensaje" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow text-center p-4">
+                <h5 class="fw-bold mb-2" id="msgTitulo">¡Aviso!</h5>
+                <p class="text-muted small mb-3" id="msgCuerpo">Operación realizada.</p>
+                <button type="button" class="btn btn-primary btn-sm w-100" data-bs-dismiss="modal">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let usuarioActual = JSON.parse(localStorage.getItem('usuarioActual')) || { id: null, nombre: "Invitado" };
+        let contactoActivoId = null;
+        let contextoChatId = null;
+        let contextosChat = [];
+        let intervaloChat = null;
+        let listaContactosCache = [];
+
+        if(!usuarioActual.id) {
+            window.location.href = 'login.html';
+        } else {
+            document.getElementById('lblUsuario').textContent = `👤 ${usuarioActual.nombre}`;
+            document.getElementById('lblMiCodigo').textContent = `Mi ID: ${usuarioActual.codigo_unico || 'Cargando...'}`;
+            const btnNav = document.getElementById('btnSesionNav');
+            btnNav.onclick = (e) => { e.preventDefault(); localStorage.removeItem('usuarioActual'); window.location.href = 'index.html'; };
+        }
+
+        function mostrarMensaje(titulo, cuerpo) {
+            document.getElementById('msgTitulo').textContent = titulo;
+            document.getElementById('msgCuerpo').textContent = cuerpo;
+            new bootstrap.Modal(document.getElementById('modalMensaje')).show();
+        }
+
+        function escaparHtml(valor) {
+            return String(valor ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        async function verificarMiCodigo() {
+            try {
+                const res = await fetch(`${API_URL}/obtener_mi_codigo?usuario_id=${usuarioActual.id}`);
+                const data = await res.json();
+                if(data.success && data.codigo_unico) {
+                    usuarioActual.codigo_unico = data.codigo_unico;
+                    localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
+                    document.getElementById('lblMiCodigo').textContent = `Mi ID: ${usuarioActual.codigo_unico}`;
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function cargarContactos() {
+            try {
+                const res = await fetch(`${API_URL}/obtener_contactos?usuario_id=${usuarioActual.id}`);
+                const data = await res.json();
+                if(data.success) {
+                    listaContactosCache = data.contactos || [];
+                    renderizarListaContactos(listaContactosCache);
+                    renderizarTablaGestion(listaContactosCache);
+                }
+            } catch(e) { console.error("Error cargando contactos:", e); }
+        }
+
+        function renderizarListaContactos(contactos) {
+            const contenedor = document.getElementById('listaContactos');
+            if(!contactos || contactos.length === 0) {
+                const hayBusqueda = document.getElementById('inputBuscarContacto').value.trim();
+                contenedor.innerHTML = hayBusqueda
+                    ? `<div class="text-center text-muted py-4 small">No se encontraron contactos con “${escaparHtml(hayBusqueda)}”.</div>`
+                    : `<div class="text-center text-muted py-4 small">Aún no tienes contactos.<br>Agrega a alguien o acepta una asesoría para iniciar un chat.</div>`;
+                return;
+            }
+
+            contenedor.innerHTML = contactos.map(c => {
+                const nombreMostrado = c.apodo_personalizado ? c.apodo_personalizado : c.nombre;
+                const activoClass = contactoActivoId == c.id ? 'active' : '';
+                const nombreJson = JSON.stringify(nombreMostrado || 'Contacto').replace(/'/g, '&#39;');
+                const correoJson = JSON.stringify(c.correo || '').replace(/'/g, '&#39;');
+                const codigoJson = JSON.stringify(c.codigo_unico || 'S/N').replace(/'/g, '&#39;');
+                return `
+                    <div class="d-flex align-items-center gap-3 p-2 rounded contact-item ${activoClass}" onclick='seleccionarContacto(${c.id}, ${nombreJson}, ${correoJson}, ${codigoJson})'>
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150" class="avatar-img" alt="Avatar">
+                        <div class="flex-grow-1 overflow-hidden">
+                            <h6 class="fw-bold mb-0 text-truncate">${escaparHtml(nombreMostrado || 'Contacto')}</h6>
+                            <small class="text-muted text-truncate d-block">ID: ${escaparHtml(c.codigo_unico || 'N/D')}</small>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderizarTablaGestion(contactos) {
+            const tbody = document.getElementById('tablaGestionContactos');
+            if(!contactos || contactos.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">No hay contactos registrados.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = contactos.map(c => `
+                <tr>
+                    <td class="fw-semibold">${escaparHtml(c.nombre)}</td>
+                    <td><input type="text" class="form-control form-control-sm" id="apodo_${c.id}" value="${escaparHtml(c.apodo_personalizado || '')}" placeholder="Sin apodo"></td>
+                    <td class="small text-muted">${escaparHtml(c.correo)}</td>
+                    <td><span class="badge bg-light text-dark border">${escaparHtml(c.codigo_unico || 'S/N')}</span></td>
+                    <td class="text-end">
+                        <button class="btn btn-primary btn-sm px-3" onclick="actualizarApodo(${c.id})">Guardar</button>
+                        <button class="btn btn-outline-danger btn-sm ms-1" onclick="eliminarContacto(${c.id})" aria-label="Eliminar contacto">Quitar</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function actualizarApodo(contactoId) {
+            const nuevoApodo = document.getElementById(`apodo_${contactoId}`).value;
+            try {
+                const res = await fetch(`${API_URL}/actualizar_apodo`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario_id: usuarioActual.id, contacto_id: contactoId, apodo: nuevoApodo })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    mostrarMensaje('¡Éxito!', 'Apodo guardado correctamente.');
+                    cargarContactos();
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function eliminarContacto(contactoId) {
+            if (!confirm('¿Quieres quitar este contacto de tu lista?')) return;
+            try {
+                const res = await fetch(`${API_URL}/eliminar_contacto`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario_id: usuarioActual.id, contacto_id: contactoId })
+                });
+                const data = await res.json();
+                if (!data.success) return mostrarMensaje('Atención', data.message || 'No se pudo quitar el contacto.');
+                if (Number(contactoActivoId) === Number(contactoId)) {
+                    contactoActivoId = null;
+                    if (intervaloChat) clearInterval(intervaloChat);
+                    document.getElementById('chatActivo').style.display = 'none';
+                    document.getElementById('chatVacio').style.display = '';
+                }
+                cargarContactos();
+            } catch (e) { console.error(e); }
+        }
+
+        async function seleccionarContacto(id, nombre, correo, codigo) {
+            contactoActivoId = id;
+            document.getElementById('chatVacio').style.display = 'none';
+            document.getElementById('chatActivo').style.display = 'flex';
+            document.getElementById('chatNombreContacto').textContent = nombre;
+            document.getElementById('chatInfoContacto').textContent = correo;
+            document.getElementById('chatCodigoBadge').textContent = `ID: ${codigo}`;
+
+            if(intervaloChat) clearInterval(intervaloChat);
+            await cargarContextosChat();
+            await cargarMensajesChat();
+            intervaloChat = setInterval(cargarMensajesChat, 3000);
+            cargarContactos();
+        }
+
+        async function cargarContextosChat() {
+            const selector = document.getElementById('selectorAsesoriaChat');
+            const informacion = document.getElementById('infoAsesoriaChat');
+            contextoChatId = null;
+            contextosChat = [];
+            selector.replaceChildren(new Option('Conversación directa', ''));
+            try {
+                const res = await fetch(`${API_URL}/asesorias_contacto?usuario_id=${encodeURIComponent(usuarioActual.id)}&contacto_id=${encodeURIComponent(contactoActivoId)}`);
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.message || 'No se pudieron cargar las asesorías compartidas.');
+                contextosChat = data.asesorias || [];
+                contextosChat.forEach(asesoria => {
+                    const opcion = new Option(`${asesoria.materia || 'Asesoría'} · ${asesoria.titulo_tema}`, asesoria.asesoria_id);
+                    selector.add(opcion);
+                });
+                if (contextosChat.length) {
+                    contextoChatId = Number(contextosChat[0].asesoria_id);
+                    selector.value = String(contextoChatId);
+                    actualizarInfoContextoChat();
+                } else {
+                    informacion.textContent = 'Conversación directa. Puedes acordar tema, fecha, hora y lugar o enlace aquí.';
+                }
+            } catch (err) {
+                informacion.textContent = 'No se pudieron cargar las asesorías aceptadas; puedes usar la conversación directa.';
+                console.error(err);
+            }
+        }
+
+        function actualizarInfoContextoChat() {
+            const informacion = document.getElementById('infoAsesoriaChat');
+            const asesoria = contextosChat.find(item => Number(item.asesoria_id) === Number(contextoChatId));
+            if (!asesoria) {
+                informacion.textContent = 'Conversación directa. Puedes acordar tema, fecha, hora y lugar o enlace aquí.';
+                return;
+            }
+            const modalidad = asesoria.modalidad ? ` · ${asesoria.modalidad}` : '';
+            const dias = asesoria.dias_semana ? ` · ${asesoria.dias_semana}` : '';
+            informacion.textContent = `Asesoría aceptada${modalidad}${dias}. Acuerden el horario y registren la sesión en su calendario privado.`;
+        }
+
+        document.getElementById('selectorAsesoriaChat').addEventListener('change', async event => {
+            contextoChatId = event.target.value ? Number(event.target.value) : null;
+            actualizarInfoContextoChat();
+            await cargarMensajesChat();
+        });
+
+        document.querySelectorAll('.btnMensajeRapido').forEach(boton => boton.addEventListener('click', () => {
+            const input = document.getElementById('inputMensajeTexto');
+            input.value = boton.dataset.mensaje || '';
+            input.focus();
+        }));
+
+        async function cargarMensajesChat() {
+            if(!contactoActivoId) return;
+            try {
+                const res = await fetch(`${API_URL}/obtener_mensajes_chat?user1=${encodeURIComponent(usuarioActual.id)}&user2=${encodeURIComponent(contactoActivoId)}&asesoria_id=${encodeURIComponent(contextoChatId || '')}`);
+                const data = await res.json();
+                if(data.success) {
+                    const caja = document.getElementById('cajaMensajes');
+                    caja.innerHTML = data.mensajes.map(m => {
+                        const esMio = m.remitente_id == usuarioActual.id;
+                        const alignClass = esMio ? 'align-self-end bg-primary text-white' : 'align-self-start bg-light text-dark border';
+                        return `
+                            <div class="p-2 rounded shadow-sm small ${alignClass}" style="max-width: 70%;">
+                                <div>${escaparHtml(m.mensaje)}</div>
+                            </div>
+                        `;
+                    }).join('');
+                    caja.scrollTop = caja.scrollHeight;
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        document.getElementById('formEnviarMensaje').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!contactoActivoId) return;
+            const texto = document.getElementById('inputMensajeTexto').value.trim();
+            if(!texto) return;
+            const botonEnviar = e.currentTarget.querySelector('button[type="submit"]');
+            const textoBoton = botonEnviar.textContent;
+            botonEnviar.disabled = true;
+            botonEnviar.textContent = 'Enviando…';
+
+            try {
+                const res = await fetch(`${API_URL}/enviar_mensaje_chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ remitente_id: usuarioActual.id, destinatario_id: contactoActivoId, mensaje: texto, asesoria_id: contextoChatId })
+                });
+                const data = await res.json();
+                if (!data.success) return mostrarMensaje('Atención', data.message || 'No se pudo enviar el mensaje.');
+                document.getElementById('inputMensajeTexto').value = '';
+                cargarMensajesChat();
+            } catch(err) {
+                mostrarMensaje('Error', 'No se pudo enviar el mensaje. Revisa tu conexión e inténtalo de nuevo.');
+            } finally {
+                botonEnviar.disabled = false;
+                botonEnviar.textContent = textoBoton;
+            }
+        });
+
+        document.getElementById('formAgregarContacto').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const termino = document.getElementById('inputTerminoBusqueda').value.trim();
+            const apodo = document.getElementById('inputApodoNuevo').value.trim();
+
+            try {
+                const res = await fetch(`${API_URL}/agregar_contacto`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario_id: usuarioActual.id, termino: termino, apodo: apodo })
+                });
+                const data = await res.json();
+                bootstrap.Modal.getInstance(document.getElementById('modalAgregarContacto')).hide();
+                document.getElementById('formAgregarContacto').reset();
+                
+                mostrarMensaje(data.success ? '¡Éxito!' : 'Atención', data.message);
+                if(data.success) cargarContactos();
+            } catch(e) { console.error(e); }
+        });
+
+        document.getElementById('inputBuscarContacto').addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtrados = listaContactosCache.filter(c => 
+                (c.nombre || '').toLowerCase().includes(term) || 
+                (c.apodo_personalizado && c.apodo_personalizado.toLowerCase().includes(term)) ||
+                (c.codigo_unico && c.codigo_unico.includes(term))
+            );
+            renderizarListaContactos(filtrados);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            verificarMiCodigo();
+            cargarContactos();
+        });
+    </script>
+    <script src="js/notificaciones.js"></script>
+    <script src="js/calendario.js"></script>
+</body>
+</html>

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorar Asesorías - AulaConnect</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <style>.avatar-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }</style>
+</head>
+<body>
+
+    <div class="d-flex">
+        <div id="sidebar-wrapper">
+            <a href="index.html" class="sidebar-heading text-decoration-none">
+                <span>🎓</span> <span>AulaConnect</span>
+            </a>
+            <div class="sidebar-menu pt-3">
+                <div class="menu-label">NAVEGACIÓN</div>
+                <a href="index.html" class="nav-link-custom"><span>🏠</span> Volver al Inicio</a>
+                <div class="menu-label mt-2">MENÚ PRINCIPAL</div>
+                <a href="dashboard.html" class="nav-link-custom"><span>📊</span> Dashboard</a>
+                <a href="explorar.html" class="nav-link-custom active"><span>🔍</span> Explorar Asesorías</a>
+                <a href="publicar.html" class="nav-link-custom"><span>➕</span> Publicar Asesoría</a>
+                <a href="solicitudes.html" class="nav-link-custom"><span>📬</span> Mis Solicitudes</a>
+                <a href="perfil.html" class="nav-link-custom"><span>👤</span> Mi Perfil</a>
+                <div class="menu-label mt-4">COMUNICACIÓN</div>
+                <a href="mensajes.html" class="nav-link-custom"><span>💬</span> Mensajes y Chat</a>
+                <div class="menu-label mt-4">SISTEMA</div>
+                <a href="login.html" class="nav-link-custom text-primary" id="btnSesionNav"><span>🔑</span> Iniciar Sesión</a>
+            </div>
+        </div>
+
+        <div id="page-content-wrapper">
+            <nav class="top-navbar d-flex justify-content-between align-items-center sticky-top">
+                <div class="w-75 d-flex gap-2">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted">🔍</span>
+                        <input type="text" id="inputBuscar" class="form-control bg-light border-start-0 ps-0" placeholder="Buscar por materia, tema, descripción o tutor...">
+                    </div>
+                    <button class="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1 px-3 text-nowrap" data-bs-toggle="modal" data-bs-target="#modalBusquedaAvanzada">
+                        <span>⚙️</span> Filtros
+                    </button>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div id="notifBadgeContainer"></div>
+                    <div id="areaUsuarioSesion"><span class="fw-bold small text-primary" id="lblUsuario"></span></div>
+                </div>
+            </nav>
+
+            <div class="container-fluid p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h3 class="fw-bold m-0" id="tituloSeccionPrincipal">Explorar Asesorías Académicas</h3>
+                        <p class="text-muted m-0" id="subtituloSeccionPrincipal">Encuentra y solicita apoyo directo con tus compañeros.</p>
+                    </div>
+                    <!-- Pestañas de Navegación / Cambio de Vista -->
+                    <div class="btn-group" role="group" aria-label="Filtro de vistas">
+                        <button type="button" class="btn btn-outline-primary active" id="btnTabExplorar" onclick="cambiarVista('explorar')">🌐 Todas las Asesorías</button>
+                        <button type="button" class="btn btn-outline-primary" id="btnTabMisAsesorias" onclick="cambiarVista('mias')">✍️ Mis Asesorías Creadas</button>
+                    </div>
+                </div>
+
+                <div id="gridExplorar" class="row g-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Búsqueda Avanzada / Filtros -->
+    <div class="modal fade" id="modalBusquedaAvanzada" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold">⚙️ Búsqueda Avanzada y Filtros</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formFiltrosAvanzados">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Materia o Tema</label>
+                            <input type="text" class="form-control form-control-sm" id="filtroMateriaTema" placeholder="Ej. Matemáticas, Programación...">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Nombre del Tutor</label>
+                            <input type="text" class="form-control form-control-sm" id="filtroTutor" placeholder="Ej. Carlos Pérez">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Modalidad</label>
+                            <select class="form-select form-select-sm" id="filtroModalidad">
+                                <option value="">Todas las modalidades</option>
+                                <option value="Virtual">Virtual</option>
+                                <option value="Presencial">Presencial</option>
+                                <option value="Híbrida">Híbrida</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Días de la semana</label>
+                            <input type="text" class="form-control form-control-sm" id="filtroDias" placeholder="Ej. Lunes, Viernes...">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-semibold">Hora mínima de inicio</label>
+                                <input type="time" class="form-control form-control-sm" id="filtroHoraInicio">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-semibold">Hora máxima de fin</label>
+                                <input type="time" class="form-control form-control-sm" id="filtroHoraFin">
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-secondary btn-sm w-50" onclick="limpiarFiltrosAvanzados()">Limpiar Filtros</button>
+                            <button type="submit" class="btn btn-accent btn-sm w-50">Aplicar Filtros</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalles -->
+    <div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title fw-bold" id="modalTituloLabel">Detalles de la Asesoría</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex align-items-center gap-3 mb-3 p-3 bg-light rounded-3">
+                        <img id="detAvatar" src="" class="avatar-img" alt="Asesor">
+                        <div>
+                            <h6 class="fw-bold mb-0" id="detNombreAsesor">Nombre</h6>
+                            <span class="text-muted small" id="detCarreraGrado">Carrera</span>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <span class="badge bg-secondary text-white" id="detMateria">Materia</span>
+                        <span class="badge bg-success-subtle text-success border px-2 py-1 rounded-pill" id="detModalidad">Virtual</span>
+                    </div>
+                    <h5 class="fw-bold text-primary mb-1" id="detTitulo">Título</h5>
+                    
+                    <div id="detContenedorHorarios" class="my-2 p-2 bg-light rounded small"></div>
+
+                    <p class="text-secondary small mb-3" id="detDescripcion"></p>
+                    <div id="contenedorReseñasAsesoria" class="border-top pt-3 mb-3"></div>
+                    
+                    <div id="contenedorFormularioSolicitud">
+                        <hr>
+                        <form id="formEnviarSolicitudModal">
+                            <input type="hidden" id="detAsesoriaId">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold">Comentario o duda para el tutor</label>
+                                <textarea class="form-control" id="detComentario" rows="2" required>Hola, me interesa tu asesoría.</textarea>
+                            </div>
+                            <button type="submit" class="btn btn-accent w-100" id="btnAccionModal">Enviar Solicitud</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Mensaje -->
+    <div class="modal fade" id="modalMensaje" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow text-center p-4">
+                <h5 class="fw-bold mb-2" id="msgTitulo">¡Éxito!</h5>
+                <p class="text-muted small mb-3" id="msgCuerpo">Operación realizada correctamente.</p>
+                <button type="button" class="btn btn-primary btn-sm w-100" data-bs-dismiss="modal">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let usuarioActual = JSON.parse(localStorage.getItem('usuarioActual')) || { id: null, nombre: "Invitado" };
+        let vistaActual = 'explorar'; // 'explorar' o 'mias'
+        let filtrosAvanzadosObj = {};
+        
+        if(usuarioActual.id) {
+            document.getElementById('lblUsuario').textContent = `👤 ${usuarioActual.nombre}`;
+            const btnNav = document.getElementById('btnSesionNav');
+            btnNav.innerHTML = `<span>🚪</span> Cerrar Sesión`;
+            btnNav.className = "nav-link-custom text-danger";
+            btnNav.onclick = (e) => { e.preventDefault(); localStorage.removeItem('usuarioActual'); window.location.href = 'index.html'; };
+        }
+
+        // Función para limpiar acentos y comparar textos de forma insensible
+        function normalizeText(str) {
+            if (!str) return '';
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        }
+
+        function mostrarMensaje(titulo, cuerpo) {
+            document.getElementById('msgTitulo').textContent = titulo;
+            document.getElementById('msgCuerpo').textContent = cuerpo;
+            new bootstrap.Modal(document.getElementById('modalMensaje')).show();
+        }
+
+        function cambiarVista(vista) {
+            vistaActual = vista;
+            const btnExplorar = document.getElementById('btnTabExplorar');
+            const btnMias = document.getElementById('btnTabMisAsesorias');
+            const titulo = document.getElementById('tituloSeccionPrincipal');
+            const subtitulo = document.getElementById('subtituloSeccionPrincipal');
+
+            if (vista === 'explorar') {
+                btnExplorar.classList.add('active');
+                btnMias.classList.remove('active');
+                titulo.textContent = 'Explorar Asesorías Académicas';
+                subtitulo.textContent = 'Encuentra y solicita apoyo directo con tus compañeros.';
+            } else {
+                btnMias.classList.add('active');
+                btnExplorar.classList.remove('active');
+                titulo.textContent = 'Mis Asesorías Creadas';
+                subtitulo.textContent = 'Gestiona, revisa y edita las asesorías que has publicado.';
+            }
+            cargarExplorar(document.getElementById('inputBuscar').value);
+        }
+
+        async function cargarExplorar(filtro = '') {
+            try {
+                const res = await fetch(`${API_URL}/get_asesorias?search=${encodeURIComponent(filtro)}`);
+                const asesorias = await res.json();
+                const grid = document.getElementById('gridExplorar');
+                
+                let listaAMostrar = asesorias;
+
+                // Si está en la pestaña de Mis Asesorías
+                if (vistaActual === 'mias') {
+                    if (!usuarioActual.id) {
+                        grid.innerHTML = `<div class="col-12 text-center text-muted py-5">Debes iniciar sesión para ver tus asesorías creadas.</div>`;
+                        return;
+                    }
+                    const misAsesoriasTotales = asesorias.filter(item => item.usuario_id == usuarioActual.id);
+                    
+                    const textoBusquedaNorm = normalizeText(filtro);
+                    listaAMostrar = misAsesoriasTotales.filter(item => {
+                        const matchTexto = !textoBusquedaNorm || 
+                            normalizeText(item.titulo_tema || item.titulo).includes(textoBusquedaNorm) || 
+                            normalizeText(item.descripcion).includes(textoBusquedaNorm) ||
+                            normalizeText(item.materia).includes(textoBusquedaNorm);
+                        return matchTexto;
+                    });
+                    
+                    // Validar si el usuario NUNCA ha creado asesorías
+                    if (misAsesoriasTotales.length === 0) {
+                        grid.innerHTML = `
+                            <div class="col-12 text-center py-5">
+                                <p class="text-muted mb-2">Aquí aparecerán tus creaciones, tus asesorías creadas.</p>
+                                <a href="publicar.html" class="btn btn-accent btn-sm">Haz clic aquí para crear tu primera asesoría</a>
+                            </div>`;
+                        return;
+                    } 
+                    // Validar si tiene asesorías creadas pero la búsqueda actual no arrojó resultados
+                    else if (listaAMostrar.length === 0) {
+                        grid.innerHTML = `
+                            <div class="col-12 text-center py-5">
+                                <p class="text-muted mb-2">No se encontró ninguna asesoría con ese criterio de búsqueda en tus publicaciones.</p>
+                                <button class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('inputBuscar').value=''; cargarExplorar('');">Ver todas mis asesorías</button>
+                            </div>`;
+                        return;
+                    }
+                } else {
+                    if(!Array.isArray(asesorias) || asesorias.length === 0) {
+                        grid.innerHTML = `<div class="col-12 text-center text-muted py-5">No se encontraron asesorías disponibles.</div>`;
+                        return;
+                    }
+                    // Búsqueda insensible a acentos para la pestaña general
+                    const textoBusquedaNorm = normalizeText(filtro);
+                    if (textoBusquedaNorm) {
+                        listaAMostrar = asesorias.filter(item => {
+                            return normalizeText(item.titulo_tema || item.titulo).includes(textoBusquedaNorm) || 
+                                   normalizeText(item.descripcion).includes(textoBusquedaNorm) ||
+                                   normalizeText(item.materia).includes(textoBusquedaNorm) ||
+                                   normalizeText(item.tutor_nombre).includes(textoBusquedaNorm);
+                        });
+                    }
+                }
+
+                // Aplicar filtros avanzados del modal si están activos (insensible a acentos)
+                listaAMostrar = listaAMostrar.filter(item => {
+                    let rawMod = item.modalidad || 'Virtual';
+                    let modalidad = rawMod.charAt(0).toUpperCase() + rawMod.slice(1).toLowerCase();
+                    if(modalidad === 'Ambas') modalidad = 'Híbrida';
+
+                    if (filtrosAvanzadosObj.materiaTema) {
+                        const term = normalizeText(filtrosAvanzadosObj.materiaTema);
+                        const matchMat = item.materia && normalizeText(item.materia).includes(term);
+                        const matchTit = (item.titulo_tema || item.titulo) && normalizeText(item.titulo_tema || item.titulo).includes(term);
+                        if (!matchMat && !matchTit) return false;
+                    }
+                    if (filtrosAvanzadosObj.tutor) {
+                        const term = normalizeText(filtrosAvanzadosObj.tutor);
+                        const matchTut = item.tutor_nombre && normalizeText(item.tutor_nombre).includes(term);
+                        if (!matchTut) return false;
+                    }
+                    if (filtrosAvanzadosObj.modalidad) {
+                        if (modalidad.toLowerCase() !== filtrosAvanzadosObj.modalidad.toLowerCase()) return false;
+                    }
+                    if (filtrosAvanzadosObj.dias) {
+                        const term = normalizeText(filtrosAvanzadosObj.dias);
+                        const matchDias = item.dias_semana && normalizeText(item.dias_semana).includes(term);
+                        if (!matchDias) return false;
+                    }
+                    if (filtrosAvanzadosObj.horaInicio) {
+                        const hItem = item.hora_inicio_presencial || item.hora_inicio_digital || '00:00';
+                        if (hItem < filtrosAvanzadosObj.horaInicio) return false;
+                    }
+                    if (filtrosAvanzadosObj.horaFin) {
+                        const hItemFin = item.hora_fin_presencial || item.hora_fin_digital || '23:59';
+                        if (hItemFin > filtrosAvanzadosObj.horaFin) return false;
+                    }
+                    return true;
+                });
+
+                if (listaAMostrar.length === 0) {
+                    grid.innerHTML = `<div class="col-12 text-center text-muted py-5">No se encontraron asesorías que coincidan con los filtros avanzados.</div>`;
+                    return;
+                }
+
+                grid.innerHTML = listaAMostrar.map(item => {
+                    let rawMod = item.modalidad || 'Virtual';
+                    let modalidad = rawMod.charAt(0).toUpperCase() + rawMod.slice(1).toLowerCase();
+                    if(modalidad === 'Ambas') modalidad = 'Híbrida';
+
+                    const dias = item.dias_semana ? item.dias_semana : 'Lunes a Viernes';
+                    let infoHorarios = `<div class="small text-muted mb-1">📅 <b>Días:</b> ${dias}</div>`;
+                    
+                    if (modalidad === 'Presencial' || modalidad === 'Híbrida') {
+                        const hIniP = item.hora_inicio_presencial ? item.hora_inicio_presencial : 'Por definir';
+                        const hFinP = item.hora_fin_presencial ? item.hora_fin_presencial : 'Por definir';
+                        const lugP = item.lugares_presencial ? item.lugares_presencial : 'Por definir';
+                        infoHorarios += `<div class="small text-secondary">📍 <b>Pres.:</b> ${hIniP} - ${hFinP} (${lugP})</div>`;
+                    }
+                    
+                    if (modalidad === 'Virtual' || modalidad === 'Digital' || modalidad === 'Híbrida') {
+                        const hIniD = item.hora_inicio_digital ? item.hora_inicio_digital : 'Por definir';
+                        const hFinD = item.hora_fin_digital ? item.hora_fin_digital : 'Por definir';
+                        const platD = item.plataformas_digital ? item.plataformas_digital : 'Google Meet / Zoom';
+                        infoHorarios += `<div class="small text-secondary">💻 <b>Dig.:</b> ${hIniD} - ${hFinD} (${platD})</div>`;
+                    }
+
+                    const nombreTutor = item.tutor_nombre ? item.tutor_nombre : 'Tutor';
+                    const promedio = Number(item.promedio_calificacion || 0);
+                    const totalResenas = Number(item.total_reseñas || 0);
+                    const textoResenas = totalResenas ? `⭐ Asesoría ${promedio.toFixed(1)} (${totalResenas})` : '⭐ Asesoría aún sin reseñas';
+                    const promedioTutor = Number(item.promedio_tutor || 0);
+                    const totalResenasTutor = Number(item.total_reseñas_tutor || 0);
+                    const textoResenasTutor = totalResenasTutor ? `⭐ Tutor ${promedioTutor.toFixed(1)} (${totalResenasTutor})` : 'Tutor aún sin reseñas';
+                    let infoTutorHtml = `<div class="small text-primary mb-1 fw-semibold">👤 Tutor: ${nombreTutor}</div><div class="small text-warning mb-2">${textoResenas} · ${textoResenasTutor}</div>`;
+
+                    let botonesAccion = '';
+                    if (vistaActual === 'mias') {
+                        botonesAccion = `
+                            <button class="btn btn-outline-primary btn-sm w-50" onclick='abrirDetalles(${JSON.stringify(item).replace(/'/g, "&#39;")})'>Ver Asesoría</button>
+                            <a href="publicar.html?editar=${item.id}" class="btn btn-outline-secondary btn-sm w-50 text-center">Editar</a>
+                        `;
+                    } else {
+                        if (usuarioActual.id && usuarioActual.id == item.usuario_id) {
+                            botonesAccion = `<button class="btn btn-outline-secondary btn-sm w-100" onclick='abrirDetalles(${JSON.stringify(item).replace(/'/g, "&#39;")})'>Ver Asesoría (Tuya)</button>`;
+                        } else {
+                            botonesAccion = `<button class="btn btn-accent btn-sm w-100" onclick='abrirDetalles(${JSON.stringify(item).replace(/'/g, "&#39;")})'>Ver y Solicitar</button>`;
+                        }
+                    }
+
+                    return `
+                        <div class="col-md-4">
+                            <div class="card card-custom p-3 h-100 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="badge bg-primary-subtle text-primary border px-2 py-1 rounded-pill">${modalidad}</span>
+                                        <small class="text-muted fw-semibold">📚 ${item.materia || 'General'}</small>
+                                    </div>
+                                    ${infoTutorHtml}
+                                    <h6 class="fw-bold">${item.titulo_tema || item.titulo || 'Sin título'}</h6>
+                                    <div class="mb-2 p-2 bg-light rounded">
+                                        ${infoHorarios}
+                                    </div>
+                                    <p class="text-secondary small mb-3">${item.descripcion || 'Sin descripción detallada.'}</p>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    ${botonesAccion}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch(err) { console.error("Error al cargar explorar:", err); }
+        }
+
+        function abrirDetalles(item) {
+            let rawMod = item.modalidad || 'Virtual';
+            let modalidad = rawMod.charAt(0).toUpperCase() + rawMod.slice(1).toLowerCase();
+            if(modalidad === 'Ambas') modalidad = 'Híbrida';
+
+            document.getElementById('detAsesoriaId').value = item.id;
+            document.getElementById('detTitulo').textContent = item.titulo_tema || item.titulo || 'Sin título';
+            document.getElementById('detMateria').textContent = item.materia || 'General';
+            document.getElementById('detModalidad').textContent = `Modalidad: ${modalidad}`;
+            document.getElementById('detDescripcion').textContent = item.descripcion || 'Sin descripción detallada.';
+            document.getElementById('detNombreAsesor').textContent = item.tutor_nombre || 'Tutor';
+            document.getElementById('detCarreraGrado').textContent = `${item.carrera || 'Ingeniería'} - ${item.semestre ? item.semestre + '° Semestre' : 'Estudiante'}`;
+            document.getElementById('detAvatar').src = item.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150';
+            cargarReseñasAsesoria(item.id);
+
+            const contenedorForm = document.getElementById('contenedorFormularioSolicitud');
+            if (usuarioActual.id && usuarioActual.id == item.usuario_id) {
+                contenedorForm.style.display = 'none';
+            } else {
+                contenedorForm.style.display = 'block';
+            }
+
+            let htmlHorarios = `<div class="mb-1 text-dark">📅 <b>Días disponibles:</b> ${item.dias_semana ? item.dias_semana : 'Lunes a Viernes'}</div>`;
+            
+            if (modalidad === 'Presencial' || modalidad === 'Híbrida') {
+                const hIniP = item.hora_inicio_presencial ? item.hora_inicio_presencial : 'Por definir';
+                const hFinP = item.hora_fin_presencial ? item.hora_fin_presencial : 'Por definir';
+                const lugP = item.lugares_presencial ? item.lugares_presencial : 'Por definir (Campus)';
+                htmlHorarios += `<div class="mt-1 pt-1 border-top">📍 <b>Presencial:</b> ${hIniP} a ${hFinP}<br><span class="text-muted">Lugar: ${lugP}</span></div>`;
+            }
+            
+            if (modalidad === 'Virtual' || modalidad === 'Digital' || modalidad === 'Híbrida') {
+                const hIniD = item.hora_inicio_digital ? item.hora_inicio_digital : 'Por definir';
+                const hFinD = item.hora_fin_digital ? item.hora_fin_digital : 'Por definir';
+                const platD = item.plataformas_digital ? item.plataformas_digital : 'Google Meet / Zoom';
+                htmlHorarios += `<div class="mt-1 pt-1 border-top">💻 <b>Digital:</b> ${hIniD} a ${hFinD}<br><span class="text-muted">Plataforma: ${platD}</span></div>`;
+            }
+
+            document.getElementById('detContenedorHorarios').innerHTML = htmlHorarios;
+            
+            new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+        }
+
+        async function cargarReseñasAsesoria(asesoriaId) {
+            const contenedor = document.getElementById('contenedorReseñasAsesoria');
+            contenedor.innerHTML = '<h6 class="fw-bold">Reseñas</h6><div class="small text-muted">Cargando...</div>';
+            try {
+                const res = await fetch(`${API_URL}/obtener_reseñas_asesoria?asesoria_id=${encodeURIComponent(asesoriaId)}`);
+                const data = await res.json();
+                const reseñas = data.success ? (data.reseñas || []) : [];
+                const escapar = texto => String(texto ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+                contenedor.innerHTML = '<h6 class="fw-bold">Reseñas anónimas</h6>' + (reseñas.length ? reseñas.map(r => `<div class="border rounded p-2 mb-2"><div class="d-flex justify-content-between"><span class="fw-semibold small">${escapar(r.objetivo || 'Asesoría')} · Anónimo</span><span class="text-warning">${'★'.repeat(Number(r.calificacion) || 0)}<span class="text-muted small"> ${Number(r.calificacion) || 0}/5</span></span></div>${r.comentario ? `<div class="small text-secondary">${escapar(r.comentario)}</div>` : '<div class="small text-muted">Sin comentario</div>'}</div>`).join('') : '<div class="alert alert-light border py-2 mb-0 small"><strong>Esta asesoría aún no tiene reseñas.</strong><br>Después de completar una sesión, podrás compartir aquí tu experiencia.</div>');
+            } catch (err) {
+                contenedor.innerHTML = '<h6 class="fw-bold">Reseñas</h6><div class="small text-muted">No fue posible cargar las reseñas.</div>';
+            }
+        }
+
+        // Manejo del formulario de filtros avanzados
+        document.getElementById('formFiltrosAvanzados').addEventListener('submit', (e) => {
+            e.preventDefault();
+            filtrosAvanzadosObj = {
+                materiaTema: document.getElementById('filtroMateriaTema').value.trim(),
+                tutor: document.getElementById('filtroTutor').value.trim(),
+                modalidad: document.getElementById('filtroModalidad').value,
+                dias: document.getElementById('filtroDias').value.trim(),
+                horaInicio: document.getElementById('filtroHoraInicio').value,
+                horaFin: document.getElementById('filtroHoraFin').value
+            };
+            const modalEl = document.getElementById('modalBusquedaAvanzada');
+            bootstrap.Modal.getInstance(modalEl).hide();
+            cargarExplorar(document.getElementById('inputBuscar').value);
+        });
+
+        function limpiarFiltrosAvanzados() {
+            document.getElementById('formFiltrosAvanzados').reset();
+            filtrosAvanzadosObj = {};
+            const modalEl = document.getElementById('modalBusquedaAvanzada');
+            bootstrap.Modal.getInstance(modalEl).hide();
+            cargarExplorar(document.getElementById('inputBuscar').value);
+        }
+
+        document.getElementById('formEnviarSolicitudModal').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!usuarioActual.id) {
+                mostrarMensaje('Atención', 'Debes iniciar sesión para solicitar una asesoría.');
+                return;
+            }
+            const data = {
+                asesoria_id: document.getElementById('detAsesoriaId').value,
+                estudiante_id: usuarioActual.id,
+                mensaje: document.getElementById('detComentario').value
+            };
+
+const res = await fetch(`${API_URL}/solicitar_asesoria`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            const result = await res.json();
+            if(result.success) {
+                bootstrap.Modal.getInstance(document.getElementById('modalDetalles')).hide();
+                mostrarMensaje('¡Enviado!', 'Tu solicitud ha sido enviada con éxito al tutor.');
+            } else {
+                mostrarMensaje('Error', result.message || 'No se pudo enviar la solicitud.');
+            }
+        });
+
+        document.getElementById('inputBuscar').addEventListener('input', (e) => cargarExplorar(e.target.value));
+        document.addEventListener('DOMContentLoaded', () => cargarExplorar());
+    </script>
+    <script src="js/notificaciones.js"></script>
+    <script src="js/calendario.js"></script>
+</body>
+</html>

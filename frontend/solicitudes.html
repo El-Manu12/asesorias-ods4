@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Solicitudes - AulaConnect</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="d-flex">
+        <!-- SIDEBAR -->
+        <div id="sidebar-wrapper">
+            <a href="index.html" class="sidebar-heading text-decoration-none">
+                <span>🎓</span> <span>AulaConnect</span>
+            </a>
+            <div class="sidebar-menu pt-3">
+                <div class="menu-label">NAVEGACIÓN</div>
+                <a href="index.html" class="nav-link-custom"><span>🏠</span> Volver al Inicio</a>
+                
+                <div class="menu-label mt-2">MENÚ PRINCIPAL</div>
+                <a href="dashboard.html" class="nav-link-custom"><span>📊</span> Dashboard</a>
+                <a href="explorar.html" class="nav-link-custom"><span>🔍</span> Explorar Asesorías</a>
+                <a href="publicar.html" class="nav-link-custom"><span>➕</span> Publicar Asesoría</a>
+                <a href="solicitudes.html" class="nav-link-custom active"><span>📬</span> Mis Solicitudes</a>
+                <a href="perfil.html" class="nav-link-custom"><span>👤</span> Mi Perfil</a>
+
+                <div class="menu-label mt-4">COMUNICACIÓN</div>
+                <a href="mensajes.html" class="nav-link-custom"><span>💬</span> Mensajes y Chat</a>
+                
+                <div class="menu-label mt-4">SISTEMA</div>
+                <a href="login.html" class="nav-link-custom text-danger" id="btnSesionNav"><span>🔑</span> Cerrar Sesión</a>
+            </div>
+        </div>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <div id="page-content-wrapper">
+            <nav class="top-navbar d-flex justify-content-between align-items-center sticky-top">
+                <div class="fw-bold text-secondary">Gestión de Solicitudes</div>
+                <div class="d-flex align-items-center gap-3">
+                    <div id="notifBadgeContainer"></div>
+                    <div id="areaUsuarioSesion"><span class="fw-bold small text-primary" id="lblUsuario"></span></div>
+                </div>
+            </nav>
+
+            <div class="container-fluid p-4">
+                <div class="mb-4">
+                    <h3 class="fw-bold m-0">Peticiones de Asesoría</h3>
+                    <p class="text-muted m-0">Revisa, acepta o rechaza las solicitudes recibidas.</p>
+                </div>
+
+                <div class="card card-custom p-4">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text bg-light">🔎</span>
+                        <input type="search" id="buscarSolicitudes" class="form-control" placeholder="Buscar por asesoría, persona, mensaje o estado…" aria-label="Buscar solicitudes">
+                        <button class="btn btn-outline-secondary" type="button" id="limpiarBusquedaSolicitudes">Limpiar</button>
+                    </div>
+                    <div class="nav nav-pills gap-2 mb-3" role="tablist" aria-label="Tipo de solicitud">
+                        <button class="nav-link active" type="button" id="tabSolicitudesRecibidas" role="tab">Recibidas <span class="badge bg-white text-primary ms-1" id="conteoRecibidas">0</span></button>
+                        <button class="nav-link" type="button" id="tabSolicitudesEnviadas" role="tab">Enviadas <span class="badge bg-white text-primary ms-1" id="conteoEnviadas">0</span></button>
+                    </div>
+                    <div id="contenedorTablaSolicitudes" aria-live="polite">Cargando solicitudes...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL MENSAJE GENERAL -->
+    <div class="modal fade" id="modalMensaje" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow text-center p-4">
+                <h5 class="fw-bold mb-2" id="msgTitulo">¡Aviso!</h5>
+                <p class="text-muted small mb-3" id="msgCuerpo">Operación realizada.</p>
+                <button type="button" class="btn btn-primary btn-sm w-100" data-bs-dismiss="modal">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalReseña" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header"><h5 class="modal-title fw-bold" id="tituloModalResena">Calificar asesoría y asesor</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <form id="formReseña"><div class="modal-body">
+                    <input type="hidden" id="resenaSolicitudId"><input type="hidden" id="resenaTipo">
+                    <p class="text-muted" id="resenaTituloAsesoria"></p>
+                    <div class="alert alert-light border py-2 small">Las reseñas son anónimas. Califica de 1 a 5 estrellas.</div>
+                    <div id="camposResenaEstudiante">
+                        <div class="mb-3"><label class="form-label small fw-semibold" for="resenaCalificacionAsesoria">La asesoría</label><select class="form-select" id="resenaCalificacionAsesoria"><option value="5">★★★★★ — Excelente</option><option value="4">★★★★ — Muy buena</option><option value="3">★★★ — Buena</option><option value="2">★★ — Regular</option><option value="1">★ — Mala</option></select><textarea class="form-control mt-2" id="resenaComentarioAsesoria" rows="2" maxlength="1000" placeholder="Comentario anónimo sobre la asesoría (opcional)"></textarea></div>
+                        <div class="mb-2"><label class="form-label small fw-semibold" for="resenaCalificacionAsesor">El asesor</label><select class="form-select" id="resenaCalificacionAsesor"><option value="5">★★★★★ — Excelente</option><option value="4">★★★★ — Muy bueno</option><option value="3">★★★ — Bueno</option><option value="2">★★ — Regular</option><option value="1">★ — Malo</option></select><textarea class="form-control mt-2" id="resenaComentarioAsesor" rows="2" maxlength="1000" placeholder="Comentario anónimo sobre el asesor (opcional)"></textarea></div>
+                    </div>
+                    <div id="camposResenaUsuario" hidden>
+                        <label class="form-label small fw-semibold" for="resenaCalificacionUsuario">El estudiante</label>
+                        <select class="form-select" id="resenaCalificacionUsuario"><option value="5">★★★★★ — Excelente</option><option value="4">★★★★ — Muy bueno</option><option value="3">★★★ — Bueno</option><option value="2">★★ — Regular</option><option value="1">★ — Malo</option></select>
+                        <textarea class="form-control mt-2" id="resenaComentarioUsuario" rows="3" maxlength="1000" placeholder="Comentario anónimo sobre el estudiante (opcional)"></textarea>
+                    </div>
+                </div><div class="modal-footer"><button type="submit" class="btn btn-accent" id="btnEnviarResena">Enviar reseñas anónimas</button></div></form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let usuarioActual = JSON.parse(localStorage.getItem('usuarioActual')) || { id: null, nombre: "Invitado", rol: "estudiante" };
+        let solicitudesCache = { recibidas: [], hechas: [] };
+        let vistaSolicitudes = 'recibidas';
+        
+        if(!usuarioActual.id) {
+            window.location.href = 'login.html';
+        } else {
+            document.getElementById('lblUsuario').textContent = `👤 ${usuarioActual.nombre}`;
+            const btnNav = document.getElementById('btnSesionNav');
+            btnNav.onclick = (e) => { e.preventDefault(); localStorage.removeItem('usuarioActual'); window.location.href = 'index.html'; };
+        }
+
+        function mostrarMensaje(titulo, cuerpo) {
+            document.getElementById('msgTitulo').textContent = titulo;
+            document.getElementById('msgCuerpo').textContent = cuerpo;
+            new bootstrap.Modal(document.getElementById('modalMensaje')).show();
+        }
+
+        function escaparHtml(valor) {
+            return String(valor ?? '').replace(/[&<>"']/g, caracter => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[caracter]));
+        }
+
+        function normalizarBusqueda(valor) {
+            return String(valor || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+        }
+
+        function renderizarGrupo(solicitudes, tipo) {
+            if (!solicitudes.length) return '';
+            const porAsesoria = solicitudes.reduce((grupos, solicitud) => {
+                (grupos[solicitud.asesoria_id] ||= []).push(solicitud);
+                return grupos;
+            }, {});
+            return Object.values(porAsesoria).map(grupo => {
+                const pendientes = grupo.filter(s => s.estado === 'pendiente').length;
+                const abierta = pendientes > 0 ? 'open' : '';
+                return `<details class="border rounded-3 mb-3 overflow-hidden" ${abierta}>
+                    <summary class="bg-light px-3 py-3 fw-semibold d-flex justify-content-between align-items-center gap-2" style="cursor:pointer;list-style:none">
+                        <span>📚 ${escaparHtml(grupo[0].asesoria_titulo)}</span>
+                        <span class="d-flex gap-2"><span class="badge bg-white text-dark border">${grupo.length} solicitud${grupo.length === 1 ? '' : 'es'}</span>${pendientes ? `<span class="badge bg-warning-subtle text-dark">${pendientes} pendiente${pendientes === 1 ? '' : 's'}</span>` : ''}</span>
+                    </summary>
+                    <div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead><tr><th>${tipo === 'recibida' ? 'Solicitante' : 'Asesor'}</th><th>Mensaje</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead><tbody>
+                    ${grupo.map(s => {
+                        const estado = s.estado || 'pendiente';
+                        const colorEstado = estado === 'aceptada' ? 'success' : estado === 'rechazada' ? 'danger' : estado === 'completada' ? 'primary' : 'secondary';
+                        let acciones = '<span class="text-muted small">Sin acciones</span>';
+                        if (tipo === 'recibida' && estado === 'pendiente') acciones = `<button class="btn btn-success btn-sm" onclick="cambiarEstado(${s.id}, 'aceptada', this)">Aceptar</button> <button class="btn btn-outline-danger btn-sm" onclick="cambiarEstado(${s.id}, 'rechazada', this)">Rechazar</button>`;
+                        if (tipo === 'recibida' && estado === 'aceptada') acciones = `<button class="btn btn-outline-primary btn-sm" onclick="cambiarEstado(${s.id}, 'completada', this)">Marcar completada</button>`;
+                        const yaCalificoSesion = Number(s.ya_reseña_asesoria) === 1;
+                        const yaCalificoAsesor = Number(s.ya_reseña_asesor) === 1;
+                        const yaCalificoEstudiante = Number(s.ya_reseño_usuario) === 1;
+                        if (tipo === 'hecha' && estado === 'completada' && (!yaCalificoSesion || !yaCalificoAsesor)) acciones = `<button class="btn btn-primary btn-sm" data-titulo="${escaparHtml(s.asesoria_titulo)}" onclick="abrirReseña(${s.id}, this.dataset.titulo, 'estudiante')">Calificar</button>`;
+                        if (tipo === 'hecha' && estado === 'completada' && yaCalificoSesion && yaCalificoAsesor) acciones = '<span class="text-success small">✓ Reseñas enviadas</span>';
+                        if (tipo === 'recibida' && estado === 'completada' && !yaCalificoEstudiante) acciones = `<button class="btn btn-outline-primary btn-sm" data-titulo="${escaparHtml(s.asesoria_titulo)}" onclick="abrirReseña(${s.id}, this.dataset.titulo, 'tutor')">Calificar estudiante</button>`;
+                        if (tipo === 'recibida' && estado === 'completada' && yaCalificoEstudiante) acciones = '<span class="text-success small">✓ Reseña enviada</span>';
+                        const reputacionEstudiante = tipo === 'recibida' && Number(s.estudiante_total_resenas) ? `<div class="small text-warning">★ ${Number(s.estudiante_promedio).toFixed(1)}/5 <span class="text-muted">(${s.estudiante_total_resenas})</span></div>` : '';
+                        return `<tr><td><div>${escaparHtml(tipo === 'recibida' ? s.estudiante_nombre : s.tutor_nombre)}</div>${reputacionEstudiante}</td><td class="text-muted small">${escaparHtml(s.mensaje || 'Sin comentario')}</td><td><span class="badge bg-${colorEstado}-subtle text-${colorEstado} border text-capitalize">${escaparHtml(estado)}</span></td><td class="text-end text-nowrap">${acciones}</td></tr>`;
+                    }).join('')}</tbody></table></div>
+                </details>`;
+            }).join('');
+        }
+
+        function renderizarSolicitudes() {
+            const resultados = document.getElementById('contenedorTablaSolicitudes');
+            const recibidasTab = document.getElementById('tabSolicitudesRecibidas');
+            const enviadasTab = document.getElementById('tabSolicitudesEnviadas');
+            const recibidas = solicitudesCache.recibidas;
+            const hechas = solicitudesCache.hechas;
+            document.getElementById('conteoRecibidas').textContent = recibidas.length;
+            document.getElementById('conteoEnviadas').textContent = hechas.length;
+            recibidasTab.classList.toggle('active', vistaSolicitudes === 'recibidas');
+            enviadasTab.classList.toggle('active', vistaSolicitudes === 'hechas');
+
+            const lista = solicitudesCache[vistaSolicitudes];
+            const busqueda = normalizarBusqueda(document.getElementById('buscarSolicitudes').value);
+            const filtradas = busqueda ? lista.filter(s => normalizarBusqueda([
+                s.asesoria_titulo, s.estudiante_nombre, s.tutor_nombre, s.mensaje, s.estado
+            ].join(' ')).includes(busqueda)) : lista;
+
+            if (!filtradas.length) {
+                const haySolicitudes = lista.length > 0;
+                resultados.innerHTML = haySolicitudes
+                    ? '<div class="text-center text-muted py-4">No hay coincidencias. Prueba con otro término o limpia la búsqueda.</div>'
+                    : `<div class="text-center text-muted py-4"><div class="fw-semibold mb-1">${vistaSolicitudes === 'recibidas' ? 'Aún no recibiste solicitudes' : 'Aún no has enviado solicitudes'}</div>${vistaSolicitudes === 'hechas' ? '<a href="explorar.html" class="btn btn-outline-primary btn-sm mt-2">Explorar asesorías</a>' : '<span class="small">Cuando alguien solicite una de tus asesorías, aparecerá aquí.</span>'}</div>`;
+                return;
+            }
+            resultados.innerHTML = renderizarGrupo(filtradas, vistaSolicitudes === 'recibidas' ? 'recibida' : 'hecha');
+        }
+
+        async function cargarSolicitudes() {
+            const contenedor = document.getElementById('contenedorTablaSolicitudes');
+            try {
+                const res = await fetch(`${API_URL}/obtener_solicitudes?usuario_id=${encodeURIComponent(usuarioActual.id)}`);
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.message || 'No se pudieron cargar las solicitudes');
+                solicitudesCache = { recibidas: data.recibidas || [], hechas: data.hechas || [] };
+                renderizarSolicitudes();
+            } catch (err) {
+                console.error(err);
+                contenedor.innerHTML = `<div class="text-center text-danger py-4">${escaparHtml(err.message || 'Error al cargar las solicitudes.')}</div>`;
+            }
+        }
+
+        async function cambiarEstado(id, estado, boton) {
+            if (estado === 'completada' && !confirm('¿Confirmas que la asesoría ya se realizó? El estudiante podrá dejar una reseña.')) return;
+            const textoOriginal = boton ? boton.textContent : '';
+            if (boton) { boton.disabled = true; boton.textContent = 'Guardando…'; }
+            try {
+                const res = await fetch(`${API_URL}/actualizar_estado_solicitud`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ solicitud_id: id, estado, usuario_id: usuarioActual.id })
+                });
+                const result = await res.json();
+                if (!res.ok || !result.success) {
+                    if (boton) { boton.disabled = false; boton.textContent = textoOriginal; }
+                    return mostrarMensaje('Atención', result.message || 'No se pudo actualizar el estado.');
+                }
+                await cargarSolicitudes();
+                const aviso = estado === 'aceptada'
+                    ? 'Solicitud aceptada. El contacto ya está disponible en Mensajes para acordar tema, horario y lugar o enlace.'
+                    : estado === 'completada'
+                        ? 'Asesoría marcada como completada. Ya pueden dejar sus reseñas anónimas.'
+                        : result.message || 'El estado de la solicitud ha cambiado.';
+                mostrarMensaje('¡Actualizado!', aviso);
+            } catch (e) {
+                if (boton) { boton.disabled = false; boton.textContent = textoOriginal; }
+                mostrarMensaje('Error', 'No fue posible comunicarse con el servidor.');
+            }
+        }
+
+        function abrirReseña(solicitudId, titulo, tipo) {
+            document.getElementById('resenaSolicitudId').value = solicitudId;
+            document.getElementById('resenaTipo').value = tipo;
+            document.getElementById('resenaTituloAsesoria').textContent = titulo;
+            document.getElementById('camposResenaEstudiante').hidden = tipo !== 'estudiante';
+            document.getElementById('camposResenaUsuario').hidden = tipo !== 'tutor';
+            document.getElementById('tituloModalResena').textContent = tipo === 'estudiante' ? 'Calificar asesoría y asesor' : 'Calificar estudiante';
+            document.getElementById('btnEnviarResena').textContent = tipo === 'estudiante' ? 'Enviar reseñas anónimas' : 'Enviar reseña anónima';
+            new bootstrap.Modal(document.getElementById('modalReseña')).show();
+        }
+
+        document.getElementById('formReseña').addEventListener('submit', async event => {
+            event.preventDefault();
+            try {
+                const tipo = document.getElementById('resenaTipo').value;
+                const body = tipo === 'estudiante'
+                    ? { tipo, solicitud_id: document.getElementById('resenaSolicitudId').value, usuario_id: usuarioActual.id, calificacion_asesoria: document.getElementById('resenaCalificacionAsesoria').value, calificacion_asesor: document.getElementById('resenaCalificacionAsesor').value, comentario_asesoria: document.getElementById('resenaComentarioAsesoria').value, comentario_asesor: document.getElementById('resenaComentarioAsesor').value }
+                    : { tipo, solicitud_id: document.getElementById('resenaSolicitudId').value, usuario_id: usuarioActual.id, calificacion_usuario: document.getElementById('resenaCalificacionUsuario').value, comentario_usuario: document.getElementById('resenaComentarioUsuario').value };
+                const res = await fetch(`${API_URL}/crear_resena`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) return mostrarMensaje('Atención', data.message || 'No se pudo guardar la reseña.');
+                bootstrap.Modal.getInstance(document.getElementById('modalReseña')).hide();
+                event.target.reset();
+                await cargarSolicitudes();
+                mostrarMensaje('¡Gracias!', 'Tus reseñas anónimas ya fueron guardadas.');
+            } catch (err) { mostrarMensaje('Error', 'No fue posible guardar la reseña.'); }
+        });
+
+        document.getElementById('tabSolicitudesRecibidas').addEventListener('click', () => { vistaSolicitudes = 'recibidas'; renderizarSolicitudes(); });
+        document.getElementById('tabSolicitudesEnviadas').addEventListener('click', () => { vistaSolicitudes = 'hechas'; renderizarSolicitudes(); });
+        document.getElementById('buscarSolicitudes').addEventListener('input', renderizarSolicitudes);
+        document.getElementById('limpiarBusquedaSolicitudes').addEventListener('click', () => { document.getElementById('buscarSolicitudes').value = ''; renderizarSolicitudes(); });
+        document.addEventListener('DOMContentLoaded', () => cargarSolicitudes());
+    </script>
+    <script src="js/notificaciones.js"></script>
+    <script src="js/calendario.js"></script>
+</body>
+</html>

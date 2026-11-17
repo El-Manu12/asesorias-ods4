@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - AulaConnect</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <div class="d-flex">
+        <div id="sidebar-wrapper">
+            <a href="index.html" class="sidebar-heading text-decoration-none">
+                <span>🎓</span> <span>AulaConnect</span>
+            </a>
+            <div class="sidebar-menu pt-3">
+                <div class="menu-label">NAVEGACIÓN</div>
+                <a href="index.html" class="nav-link-custom"><span>🏠</span> Volver al Inicio</a>
+                <div class="menu-label mt-2">MENÚ PRINCIPAL</div>
+                <a href="dashboard.html" class="nav-link-custom"><span>📊</span> Dashboard</a>
+                <a href="explorar.html" class="nav-link-custom active"><span>🔍</span> Explorar Asesorías</a>
+                <a href="publicar.html" class="nav-link-custom"><span>➕</span> Publicar Asesoría</a>
+                <a href="solicitudes.html" class="nav-link-custom"><span>📬</span> Mis Solicitudes</a>
+                <a href="perfil.html" class="nav-link-custom"><span>👤</span> Mi Perfil</a>
+                <div class="menu-label mt-4">COMUNICACIÓN</div>
+                <a href="mensajes.html" class="nav-link-custom"><span>💬</span> Mensajes y Chat</a>
+                <div class="menu-label mt-4">SISTEMA</div>
+                <a href="login.html" class="nav-link-custom text-primary" id="btnSesionNav"><span>🔑</span> Iniciar Sesión</a>
+            </div>
+        </div>
+
+        <div id="page-content-wrapper">
+            <nav class="top-navbar d-flex justify-content-between align-items-center sticky-top">
+                <div class="fw-bold text-secondary">Configuración de Perfil</div>
+                <div id="areaUsuarioSesion"><span class="fw-bold small text-primary" id="lblUsuario"></span></div>
+            </nav>
+
+            <div class="container-fluid p-4">
+                <div class="mb-4">
+                    <h3 class="fw-bold m-0">Mi Perfil Académico</h3>
+                    <p class="text-muted m-0">Actualiza tus datos personales y credenciales de acceso.</p>
+                </div>
+
+                <div id="reputacionUsuario" class="col-md-8 mx-auto mb-3"></div>
+                <div class="card card-custom p-4 col-md-8 mx-auto" id="cardPerfilContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        let usuarioActual = JSON.parse(localStorage.getItem('usuarioActual')) || { id: null, nombre: "Invitado" };
+        const cardContainer = document.getElementById('cardPerfilContainer');
+        const escaparHtml = valor => String(valor ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+        if(usuarioActual.id) {
+            document.getElementById('lblUsuario').textContent = `👤 ${usuarioActual.nombre}`;
+            const btnNav = document.getElementById('btnSesionNav');
+            btnNav.innerHTML = `<span>🚪</span> Cerrar Sesión`;
+            btnNav.className = "nav-link-custom text-danger";
+            btnNav.onclick = (e) => { e.preventDefault(); localStorage.removeItem('usuarioActual'); window.location.href = 'index.html'; };
+
+            cardContainer.innerHTML = `
+                <form id="formPerfil">
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <img id="imgAvatarPreview" src="${escaparHtml(usuarioActual.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150')}" class="avatar-lg" alt="Foto de perfil">
+                        <div>
+                            <h5 class="fw-bold mb-0" id="txtNombrePreview">${escaparHtml(usuarioActual.nombre)}</h5>
+                            <span class="text-muted small" id="txtCorreoPreview">${escaparHtml(usuarioActual.correo)}</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 p-3 bg-light rounded-3">
+                        <label class="form-label small fw-semibold" for="perfilAvatar">Foto de perfil</label>
+                        <div class="d-flex flex-wrap align-items-center gap-2">
+                            <input type="file" class="form-control form-control-sm" id="perfilAvatar" accept="image/png,image/jpeg,image/webp" style="max-width:360px">
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="btnGuardarAvatar" disabled>Guardar foto</button>
+                        </div>
+                        <small class="text-muted" id="estadoAvatar">JPG, PNG o WebP. La imagen se ajustará automáticamente.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Nombre Completo</label>
+                            <input type="text" class="form-control" id="perfilNombre" value="${escaparHtml(usuarioActual.nombre || '')}" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-semibold">Carrera</label>
+                            <input type="text" class="form-control" id="perfilCarrera" value="${escaparHtml(usuarioActual.carrera || '')}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-semibold">Semestre</label>
+                            <input type="number" min="1" max="20" class="form-control" id="perfilGrado" value="${escaparHtml(usuarioActual.semestre || '')}" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Contraseña</label>
+                        <input type="password" class="form-control" id="perfilPassword" value="${escaparHtml(usuarioActual.password || '')}" required>
+                    </div>
+                    <button type="submit" class="btn btn-accent w-100">Guardar Cambios</button>
+                </form>
+            `;
+
+            cargarReputacionUsuario();
+
+            document.getElementById('formPerfil').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const data = {
+                    id: usuarioActual.id,
+                    nombre: document.getElementById('perfilNombre').value,
+                    carrera: document.getElementById('perfilCarrera').value,
+                    semestre: document.getElementById('perfilGrado').value,
+                    password: document.getElementById('perfilPassword').value
+                };
+
+                const res = await fetch(`${API_URL}?action=update_perfil`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                const result = await res.json();
+                if(result.success) {
+                    usuarioActual = { ...usuarioActual, ...(result.usuario || {}), nombre: data.nombre, carrera: data.carrera, semestre: Number(data.semestre) };
+                    localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
+                    alert('¡Tus datos de perfil se guardaron correctamente!');
+                    window.location.reload();
+                }
+            });
+
+            const avatarInput = document.getElementById('perfilAvatar');
+            const avatarBoton = document.getElementById('btnGuardarAvatar');
+            const avatarEstado = document.getElementById('estadoAvatar');
+            let imagenPreparada = '';
+            avatarInput.addEventListener('change', async () => {
+                const archivo = avatarInput.files && avatarInput.files[0];
+                imagenPreparada = '';
+                avatarBoton.disabled = true;
+                if (!archivo) return;
+                if (!['image/jpeg', 'image/png', 'image/webp'].includes(archivo.type)) {
+                    avatarEstado.textContent = 'Elige una imagen JPG, PNG o WebP.';
+                    avatarInput.value = '';
+                    return;
+                }
+                avatarEstado.textContent = 'Preparando imagen…';
+                try {
+                    imagenPreparada = await comprimirImagen(archivo);
+                    document.getElementById('imgAvatarPreview').src = imagenPreparada;
+                    avatarBoton.disabled = false;
+                    avatarEstado.textContent = 'Vista previa lista. Guarda la foto para aplicarla.';
+                } catch (error) {
+                    avatarEstado.textContent = 'No se pudo abrir esa imagen. Prueba con otra.';
+                }
+            });
+
+            avatarBoton.addEventListener('click', async () => {
+                if (!imagenPreparada) return;
+                avatarBoton.disabled = true;
+                avatarBoton.textContent = 'Guardando…';
+                avatarEstado.textContent = 'Guardando tu foto de perfil…';
+                try {
+                    const respuesta = await fetch(`${API_URL}/update_avatar`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ usuario_id: usuarioActual.id, imagen: imagenPreparada })
+                    });
+                    const resultado = await respuesta.json();
+                    if (!respuesta.ok || !resultado.success) throw new Error(resultado.message || 'No se pudo guardar la foto.');
+                    usuarioActual = { ...usuarioActual, ...(resultado.usuario || {}) };
+                    localStorage.setItem('usuarioActual', JSON.stringify(usuarioActual));
+                    document.getElementById('imgAvatarPreview').src = usuarioActual.avatar;
+                    const avatarNav = document.getElementById('avatarUsuarioNav');
+                    if (avatarNav) avatarNav.src = usuarioActual.avatar;
+                    imagenPreparada = '';
+                    avatarInput.value = '';
+                    avatarEstado.textContent = 'Foto de perfil actualizada.';
+                } catch (error) {
+                    avatarBoton.disabled = false;
+                    avatarEstado.textContent = error.message || 'No se pudo guardar la foto.';
+                } finally {
+                    avatarBoton.textContent = 'Guardar foto';
+                }
+            });
+
+            function comprimirImagen(archivo) {
+                return new Promise((resolve, reject) => {
+                    const urlTemporal = URL.createObjectURL(archivo);
+                    const imagen = new Image();
+                    imagen.onload = () => {
+                        const lado = 320;
+                        const lienzo = document.createElement('canvas');
+                        lienzo.width = lado;
+                        lienzo.height = lado;
+                        const contexto = lienzo.getContext('2d');
+                        contexto.fillStyle = '#ffffff';
+                        contexto.fillRect(0, 0, lado, lado);
+                        const escala = Math.max(lado / imagen.width, lado / imagen.height);
+                        const ancho = imagen.width * escala;
+                        const alto = imagen.height * escala;
+                        contexto.drawImage(imagen, (lado - ancho) / 2, (lado - alto) / 2, ancho, alto);
+                        URL.revokeObjectURL(urlTemporal);
+                        resolve(lienzo.toDataURL('image/jpeg', 0.78));
+                    };
+                    imagen.onerror = () => { URL.revokeObjectURL(urlTemporal); reject(new Error('Imagen no válida')); };
+                    imagen.src = urlTemporal;
+                });
+            }
+
+            async function cargarReputacionUsuario() {
+                const contenedor = document.getElementById('reputacionUsuario');
+                try {
+                    const [respuestaUsuario, respuestaAsesor] = await Promise.all([
+                        fetch(`${API_URL}/obtener_reseñas_usuario?usuario_id=${encodeURIComponent(usuarioActual.id)}`),
+                        fetch(`${API_URL}/obtener_reseñas_asesor?asesor_id=${encodeURIComponent(usuarioActual.id)}`)
+                    ]);
+                    const [datosUsuario, datosAsesor] = await Promise.all([respuestaUsuario.json(), respuestaAsesor.json()]);
+                    const resumen = (titulo, total, promedio, vacio) => `<div class="col-md-6"><div class="card card-custom px-3 py-2 h-100"><strong>${titulo}</strong>${total ? `<span class="text-warning">★ ${Number(promedio).toFixed(1)}/5 <small class="text-muted">(${total})</small></span>` : `<small class="text-muted">${vacio}</small>`}</div></div>`;
+                    const resenasAsesor = datosAsesor.reseñas || [];
+                    const promedioAsesor = resenasAsesor.length ? resenasAsesor.reduce((suma, r) => suma + Number(r.calificacion || 0), 0) / resenasAsesor.length : 0;
+                    const escapar = texto => String(texto ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+                    const comentarios = (datosUsuario.reseñas || []).filter(r => r.comentario).slice(0, 5);
+                    const comentariosHtml = comentarios.length ? `<details class="mt-2"><summary class="small text-primary" style="cursor:pointer">Ver comentarios anónimos</summary>${comentarios.map(r => `<div class="small border-top pt-2 mt-2"><span class="text-warning">${'★'.repeat(Number(r.calificacion) || 0)}</span><div>${escapar(r.comentario)}</div></div>`).join('')}</details>` : '';
+                    contenedor.innerHTML = `<div class="row g-2">${resumen('Reseñas anónimas como asesor', resenasAsesor.length, promedioAsesor, 'Aún no tienes reseñas como asesor.')}${resumen('Reseñas anónimas como estudiante', datosUsuario.total || 0, datosUsuario.promedio || 0, 'Al completar una asesoría, el tutor podrá reseñarte.')}</div>${comentariosHtml}`;
+                } catch (_) {
+                    contenedor.innerHTML = '';
+                }
+            }
+
+        } else {
+            cardContainer.innerHTML = `
+                <div class="text-center py-5">
+                    <p class="text-muted mb-3">Por favor inicia sesión para ver y editar tus datos personales y académicos.</p>
+                    <a href="login.html" class="btn btn-primary btn-sm">Iniciar Sesión Ahora</a>
+                </div>`;
+        }
+    </script>
+    <script src="js/notificaciones.js"></script>
+    <script src="js/calendario.js"></script>
+</body>
+</html>
