@@ -68,7 +68,7 @@
             cardContainer.innerHTML = `
                 <form id="formPerfil">
                     <div class="profile-identity d-flex align-items-center gap-3 mb-4">
-                        <img id="imgAvatarPreview" src="${escaparHtml(usuarioActual.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150')}" class="avatar-lg" alt="Foto de perfil">
+                        <img id="imgAvatarPreview" src="${escaparHtml(usuarioActual.avatar || 'uploads/usuario.png')}" onerror="this.onerror=null;this.src='uploads/usuario.png'" class="avatar-lg" alt="Foto de perfil">
                         <div>
                             <span class="page-kicker mb-1">PERFIL AULACONNECT</span>
                             <h5 class="fw-bold mb-0" id="txtNombrePreview">${escaparHtml(usuarioActual.nombre)}</h5>
@@ -218,13 +218,16 @@
                         fetch(`${API_URL}/obtener_reseñas_asesor?asesor_id=${encodeURIComponent(usuarioActual.id)}`)
                     ]);
                     const [datosUsuario, datosAsesor] = await Promise.all([respuestaUsuario.json(), respuestaAsesor.json()]);
-                    const resumen = (titulo, total, promedio, vacio) => `<div class="col-md-6"><div class="card card-custom review-summary px-3 py-3 h-100"><strong>${titulo}</strong>${total ? `<span class="text-warning">★ ${Number(promedio).toFixed(1)}/5 <small class="text-muted">(${total})</small></span>` : `<small class="text-muted">${vacio}</small>`}</div></div>`;
+                    const resumen = (titulo, total, promedio, vacio) => `<div class="col-md-6"><div class="card card-custom review-summary px-3 py-3 h-100"><strong>${titulo}</strong>${total ? `<span class="rating-score" data-rating="${Math.max(1, Math.min(5, Math.round(Number(promedio))))}">★ ${Number(promedio).toFixed(1)}/5 <small class="text-muted">(${total})</small></span>` : `<small class="text-muted">${vacio}</small>`}</div></div>`;
                     const resenasAsesor = datosAsesor.reseñas || [];
                     const promedioAsesor = resenasAsesor.length ? resenasAsesor.reduce((suma, r) => suma + Number(r.calificacion || 0), 0) / resenasAsesor.length : 0;
                     const escapar = texto => String(texto ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-                    const comentarios = (datosUsuario.reseñas || []).filter(r => r.comentario).slice(0, 5);
-                    const comentariosHtml = comentarios.length ? `<details class="mt-2"><summary class="small text-primary" style="cursor:pointer">Ver comentarios anónimos</summary>${comentarios.map(r => `<div class="small border-top pt-2 mt-2"><span class="text-warning">${'★'.repeat(Number(r.calificacion) || 0)}</span><div>${escapar(r.comentario)}</div></div>`).join('')}</details>` : '';
-                    contenedor.innerHTML = `<div class="row g-2">${resumen('Reseñas anónimas como asesor', resenasAsesor.length, promedioAsesor, 'Aún no tienes reseñas como asesor.')}${resumen('Reseñas anónimas como estudiante', datosUsuario.total || 0, datosUsuario.promedio || 0, 'Al completar una asesoría, el tutor podrá reseñarte.')}</div>${comentariosHtml}`;
+                    const comentarios = [
+                        ...(datosUsuario.reseñas || []).map(r => ({ ...r, contexto: 'Como estudiante' })),
+                        ...(datosAsesor.reseñas || []).map(r => ({ ...r, contexto: 'Como asesor' }))
+                    ].filter(r => r.comentario).sort((a, b) => new Date(b.creado_en) - new Date(a.creado_en)).slice(0, 5);
+                    const comentariosHtml = comentarios.length ? `<details class="mt-2"><summary class="small text-primary" style="cursor:pointer">Ver comentarios y autores</summary>${comentarios.map(r => { const rating = Math.max(1, Math.min(5, Math.round(Number(r.calificacion) || 1))); return `<div class="small border-top pt-2 mt-2"><div class="d-flex justify-content-between gap-2"><span class="fw-semibold">${escapar(r.autor_nombre || 'Usuario')} · ${r.contexto}</span><span class="rating-score text-nowrap" data-rating="${rating}">${'★'.repeat(rating)}</span></div><div>${escapar(r.comentario)}</div></div>`; }).join('')}</details>` : '';
+                    contenedor.innerHTML = `<div class="row g-2">${resumen('Reseñas recibidas como asesor', resenasAsesor.length, promedioAsesor, 'Aún no tienes reseñas como asesor.')}${resumen('Reseñas recibidas como estudiante', datosUsuario.total || 0, datosUsuario.promedio || 0, 'Al completar una asesoría, el tutor podrá reseñarte.')}</div>${comentariosHtml}`;
                 } catch (_) {
                     contenedor.innerHTML = '';
                 }

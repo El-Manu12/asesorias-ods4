@@ -12,6 +12,12 @@
     --bs-link-hover-color: #173b70;
 }
 
+.rating-score[data-rating="5"] { color: #b88600 !important; }
+.rating-score[data-rating="4"] { color: #0d6efd !important; }
+.rating-score[data-rating="3"] { color: #198754 !important; }
+.rating-score[data-rating="2"] { color: #fd7e14 !important; }
+.rating-score[data-rating="1"] { color: #dc3545 !important; }
+
 body {
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-light);

@@ -128,12 +128,13 @@
                 </div>
                 <div class="modal-body">
                     <div class="d-flex align-items-center gap-3 mb-3 p-3 bg-light rounded-3">
-                        <img id="detAvatar" src="" class="avatar-img" alt="Asesor">
+                        <img id="detAvatar" src="uploads/usuario.png" onerror="this.onerror=null;this.src='uploads/usuario.png'" class="avatar-img" alt="Asesor">
                         <div>
                             <h6 class="fw-bold mb-0" id="detNombreAsesor">Nombre</h6>
                             <span class="text-muted small" id="detCarreraGrado">Carrera</span>
                         </div>
                     </div>
+                    <div id="detResumenCalificaciones" class="small mb-3"></div>
                     <div class="mb-2">
                         <span class="badge bg-secondary text-white" id="detMateria">Materia</span>
                         <span class="badge bg-success-subtle text-success border px-2 py-1 rounded-pill" id="detModalidad">Virtual</span>
@@ -143,7 +144,12 @@
                     <div id="detContenedorHorarios" class="my-2 p-2 bg-light rounded small"></div>
 
                     <p class="text-secondary small mb-3" id="detDescripcion"></p>
-                    <div id="contenedorReseñasAsesoria" class="border-top pt-3 mb-3"></div>
+                    <section class="reviews-toggle-section border-top pt-3 mb-3">
+                        <button type="button" id="btnToggleResenas" class="btn btn-link p-0 fw-semibold text-decoration-none" aria-expanded="true" aria-controls="panelResenasAsesoria">Ocultar reseñas</button>
+                        <div id="panelResenasAsesoria" class="mt-2">
+                            <div id="contenedorReseñasAsesoria"></div>
+                        </div>
+                    </section>
                     
                     <div id="contenedorFormularioSolicitud">
                         <hr>
@@ -176,6 +182,7 @@
     <script>
         const API_URL = 'http://localhost:3000/api';
         let usuarioActual = JSON.parse(localStorage.getItem('usuarioActual')) || { id: null, nombre: "Invitado" };
+        let asesoriaActivaParaResenas = null;
         let vistaActual = 'explorar'; // 'explorar' o 'mias'
         let filtrosAvanzadosObj = {};
         
@@ -346,11 +353,11 @@
                     const nombreTutor = item.tutor_nombre ? item.tutor_nombre : 'Tutor';
                     const promedio = Number(item.promedio_calificacion || 0);
                     const totalResenas = Number(item.total_reseñas || 0);
-                    const textoResenas = totalResenas ? `⭐ Asesoría ${promedio.toFixed(1)} (${totalResenas})` : '⭐ Asesoría aún sin reseñas';
+                    const textoResenas = totalResenas ? `<span class="rating-score" data-rating="${Math.round(promedio)}">⭐ Asesoría ${promedio.toFixed(1)} (${totalResenas})</span>` : '⭐ Asesoría aún sin reseñas';
                     const promedioTutor = Number(item.promedio_tutor || 0);
                     const totalResenasTutor = Number(item.total_reseñas_tutor || 0);
-                    const textoResenasTutor = totalResenasTutor ? `⭐ Tutor ${promedioTutor.toFixed(1)} (${totalResenasTutor})` : 'Tutor aún sin reseñas';
-                    let infoTutorHtml = `<div class="small text-primary mb-1 fw-semibold">👤 Tutor: ${nombreTutor}</div><div class="small text-warning mb-2">${textoResenas} · ${textoResenasTutor}</div>`;
+                    const textoResenasTutor = totalResenasTutor ? `<span class="rating-score" data-rating="${Math.round(promedioTutor)}">⭐ Tutor ${promedioTutor.toFixed(1)} (${totalResenasTutor})</span>` : 'Tutor aún sin reseñas';
+                    let infoTutorHtml = `<div class="small text-primary mb-1 fw-semibold">👤 Tutor: ${nombreTutor}</div><div class="small mb-2">${textoResenas} · ${textoResenasTutor}</div>`;
 
                     let botonesAccion = '';
                     if (vistaActual === 'mias') {
@@ -404,7 +411,18 @@
             document.getElementById('detDescripcion').textContent = item.descripcion || 'Sin descripción detallada.';
             document.getElementById('detNombreAsesor').textContent = item.tutor_nombre || 'Tutor';
             document.getElementById('detCarreraGrado').textContent = `${item.carrera || 'Ingeniería'} - ${item.semestre ? item.semestre + '° Semestre' : 'Estudiante'}`;
-            document.getElementById('detAvatar').src = item.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150';
+            document.getElementById('detAvatar').src = item.avatar || 'uploads/usuario.png';
+            const promedioAsesoria = Number(item.promedio_calificacion || 0);
+            const totalAsesoria = Number(item.total_reseñas || 0);
+            const promedioTutor = Number(item.promedio_tutor || 0);
+            const totalTutor = Number(item.total_reseñas_tutor || 0);
+            document.getElementById('detResumenCalificaciones').innerHTML = `<span class="me-3">Asesoría: ${totalAsesoria ? `<span class="rating-score" data-rating="${Math.round(promedioAsesoria)}">★ ${promedioAsesoria.toFixed(1)}/5 (${totalAsesoria})</span>` : 'Aún sin reseñas'}</span><span>Tutor: ${totalTutor ? `<span class="rating-score" data-rating="${Math.round(promedioTutor)}">★ ${promedioTutor.toFixed(1)}/5 (${totalTutor})</span>` : 'Aún sin reseñas'}</span>`;
+            document.getElementById('detAvatar').onerror = function() { this.onerror = null; this.src = 'uploads/usuario.png'; };
+            const panelResenas = document.getElementById('panelResenasAsesoria');
+            const botonResenas = document.getElementById('btnToggleResenas');
+            panelResenas.hidden = false;
+            botonResenas.setAttribute('aria-expanded', 'true');
+            botonResenas.textContent = 'Ocultar reseñas';
             cargarReseñasAsesoria(item.id);
 
             const contenedorForm = document.getElementById('contenedorFormularioSolicitud');
@@ -450,18 +468,30 @@
         }
 
         async function cargarReseñasAsesoria(asesoriaId) {
+            asesoriaActivaParaResenas = String(asesoriaId);
+            const solicitudActual = asesoriaActivaParaResenas;
             const contenedor = document.getElementById('contenedorReseñasAsesoria');
             contenedor.innerHTML = '<h6 class="fw-bold">Reseñas</h6><div class="small text-muted">Cargando...</div>';
             try {
-                const res = await fetch(`${API_URL}/obtener_reseñas_asesoria?asesoria_id=${encodeURIComponent(asesoriaId)}`);
+                const res = await fetch(`${API_URL}/obtener_resenas_asesoria?asesoria_id=${encodeURIComponent(asesoriaId)}`);
                 const data = await res.json();
-                const reseñas = data.success ? (data.reseñas || []) : [];
+                if (solicitudActual !== asesoriaActivaParaResenas) return;
+                if (!res.ok || !data.success) throw new Error(data.message || 'No fue posible cargar las reseñas.');
+                const reseñas = data.reseñas || [];
                 const escapar = texto => String(texto ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-                contenedor.innerHTML = '<h6 class="fw-bold">Reseñas anónimas</h6>' + (reseñas.length ? reseñas.map(r => `<div class="border rounded p-2 mb-2"><div class="d-flex justify-content-between"><span class="fw-semibold small">${escapar(r.objetivo || 'Asesoría')} · Anónimo</span><span class="text-warning">${'★'.repeat(Number(r.calificacion) || 0)}<span class="text-muted small"> ${Number(r.calificacion) || 0}/5</span></span></div>${r.comentario ? `<div class="small text-secondary">${escapar(r.comentario)}</div>` : '<div class="small text-muted">Sin comentario</div>'}</div>`).join('') : '<div class="alert alert-light border py-2 mb-0 small"><strong>Esta asesoría aún no tiene reseñas.</strong><br>Después de completar una sesión, podrás compartir aquí tu experiencia.</div>');
+                contenedor.innerHTML = '<h6 class="fw-bold">Reseñas</h6>' + (reseñas.length ? reseñas.map(r => { const rating = Math.max(1, Math.min(5, Math.round(Number(r.calificacion) || 1))); return `<div class="border rounded p-2 mb-2"><div class="d-flex justify-content-between"><span class="fw-semibold small">${escapar(r.objetivo || 'Asesoría')} · ${escapar(r.autor_nombre || 'Usuario')}</span><span class="rating-score" data-rating="${rating}">${'★'.repeat(rating)} ${Number(r.calificacion) || 0}/5</span></div>${r.comentario ? `<div class="small text-secondary">${escapar(r.comentario)}</div>` : '<div class="small text-muted">Sin comentario</div>'}</div>`; }).join('') : '<div class="alert alert-light border py-2 mb-0 small"><strong>Esta asesoría aún no tiene reseñas.</strong><br>Después de completar una sesión, podrás compartir aquí tu experiencia.</div>');
             } catch (err) {
+                if (solicitudActual !== asesoriaActivaParaResenas) return;
                 contenedor.innerHTML = '<h6 class="fw-bold">Reseñas</h6><div class="small text-muted">No fue posible cargar las reseñas.</div>';
             }
         }
+
+        document.getElementById('btnToggleResenas').addEventListener('click', function() {
+            const panel = document.getElementById('panelResenasAsesoria');
+            panel.hidden = !panel.hidden;
+            this.setAttribute('aria-expanded', String(!panel.hidden));
+            this.textContent = panel.hidden ? 'Mostrar reseñas' : 'Ocultar reseñas';
+        });
 
         // Manejo del formulario de filtros avanzados
         document.getElementById('formFiltrosAvanzados').addEventListener('submit', (e) => {

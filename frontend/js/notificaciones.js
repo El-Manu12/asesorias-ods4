@@ -57,7 +57,8 @@
     enlacePerfil.setAttribute('aria-label', 'Abrir mi perfil');
     const avatar = document.createElement('img');
     avatar.id = 'avatarUsuarioNav';
-    avatar.src = usuario.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150';
+    avatar.src = usuario.avatar || 'uploads/usuario.png';
+    avatar.onerror = () => { avatar.onerror = null; avatar.src = 'uploads/usuario.png'; };
     avatar.alt = '';
     avatar.width = 34;
     avatar.height = 34;

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 17-11-2026 a las 05:46:29
+-- Tiempo de generación: 27-11-2026 a las 17:46:21
 -- Versión del servidor: 10.4.24-MariaDB
 -- Versión de PHP: 7.4.29
 
@@ -62,7 +62,8 @@ INSERT INTO `asesorias` (`id`, `usuario_id`, `materia_id`, `titulo_tema`, `descr
 (5, 1, 7, 'Matematicas', 'Aprende a sumar\n', 'virtual', 'activa', '2026-11-06 04:58:56', 'Matemáticas', '08:00:00', '10:00:00', 'Lunes a Viernes', '08:00:00', '10:00:00', NULL, '', '16:00:00', '18:00:00', NULL, ''),
 (6, 1, 7, 'Matematicas', '1', 'presencial', 'activa', '2026-11-06 05:33:58', 'Matemáticas', '11:11:00', '23:12:00', 'Lunes a Viernes', '08:00:00', '10:00:00', NULL, '', '16:00:00', '18:00:00', NULL, ''),
 (8, 1, 3, 'no saber hablar', 'a', 'híbrida', 'activa', '2026-11-09 04:22:28', 'Español', '08:00:00', '10:00:00', 'De Lunes a Jueves', '11:25:00', '15:23:00', 'Biblioteca, Salon A4 y Fueras de la Universidad', '', '15:26:00', '16:27:00', 'Zoom y Discord', ''),
-(9, 1, 6, 'Rvolucion', 'Variedad', 'presencial', 'activa', '2026-11-16 06:18:47', 'Historia', '08:00:00', '10:00:00', 'Lunes a Jueves', '02:10:00', '03:12:00', 'Biblioteca, Salon A4 y Fueras de la Universidad', '', NULL, NULL, NULL, '');
+(9, 1, 6, 'Rvolucion', 'Variedad', 'presencial', 'activa', '2026-11-16 06:18:47', 'Historia', '08:00:00', '10:00:00', 'Lunes a Jueves', '02:10:00', '03:12:00', 'Biblioteca, Salon A4 y Fueras de la Universidad', '', NULL, NULL, NULL, ''),
+(10, 5, 7, 'Sumas 2', 'hola', 'presencial', 'activa', '2026-11-24 14:17:40', 'Matematicas', '08:00:00', '10:00:00', 'Lunes a Jueves', '10:17:00', '00:17:00', 'Biblioteca, Salon A4 y Fueras de la Universidad', '', NULL, NULL, NULL, '');
 
 -- --------------------------------------------------------
 
@@ -91,6 +92,29 @@ INSERT INTO `calendario_eventos` (`id`, `usuario_id`, `titulo`, `descripcion`, `
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `codigos_login`
+--
+
+CREATE TABLE `codigos_login` (
+  `challenge_id` char(36) NOT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `codigo_hash` char(64) NOT NULL,
+  `intentos` tinyint(3) UNSIGNED NOT NULL DEFAULT 0,
+  `consumido` tinyint(1) NOT NULL DEFAULT 0,
+  `expira_en` datetime NOT NULL,
+  `creado_en` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Volcado de datos para la tabla `codigos_login`
+--
+
+INSERT INTO `codigos_login` (`challenge_id`, `usuario_id`, `codigo_hash`, `intentos`, `consumido`, `expira_en`, `creado_en`) VALUES
+('6295a64f-f0fa-4301-b62d-d8a78835c3d8', 4, '071336d664b1b228e323d1bd547a6d55685cb2cf5a26daea4468bd17f19c9bd4', 0, 1, '2026-11-26 12:22:28', '2026-11-26 18:12:28');
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `contactos`
 --
 
@@ -109,7 +133,9 @@ CREATE TABLE `contactos` (
 
 INSERT INTO `contactos` (`id`, `usuario_id`, `contacto_id`, `estado`, `fecha_creacion`, `apodo_personalizado`) VALUES
 (1, 3, 1, 'aceptado', '2026-11-09 05:55:26', 'Asesor de Español/Mate'),
-(2, 1, 3, 'aceptado', '2026-11-09 05:59:48', 'admin');
+(2, 1, 3, 'aceptado', '2026-11-09 05:59:48', 'admin'),
+(3, 4, 5, 'aceptado', '2026-11-24 14:19:19', 'Tutor'),
+(4, 5, 4, 'aceptado', '2026-11-24 14:19:19', 'Estudiante');
 
 -- --------------------------------------------------------
 
@@ -236,7 +262,15 @@ INSERT INTO `notificaciones` (`id`, `usuario_id`, `mensaje`, `leido`, `creado_en
 (2, 1, 'Nuevo mensaje de Admin Sistema.', 1, '2026-11-17 03:36:05'),
 (3, 1, 'Nueva solicitud de asesoría para “JavaScript Moderno y DOM”.', 1, '2026-11-17 04:38:28'),
 (4, 3, 'Tu solicitud para “JavaScript Moderno y DOM” fue aceptada.', 1, '2026-11-17 04:39:21'),
-(5, 3, 'La asesoría “JavaScript Moderno y DOM” se marcó como completada. Ya puedes dejar tu reseña.', 1, '2026-11-17 04:39:49');
+(5, 3, 'La asesoría “JavaScript Moderno y DOM” se marcó como completada. Ya puedes dejar tu reseña.', 1, '2026-11-17 04:39:49'),
+(6, 3, 'Tu solicitud para “Matematicas” fue aceptada.', 0, '2026-11-17 14:39:47'),
+(7, 3, 'La asesoría “Rvolucion” se marcó como completada. Ya puedes dejar tu reseña.', 0, '2026-11-17 14:39:58'),
+(8, 3, 'Tu solicitud para “Rvolucion” fue aceptada.', 0, '2026-11-23 03:57:47'),
+(9, 3, 'La asesoría “Rvolucion” se marcó como completada. Ya puedes dejar tu reseña.', 0, '2026-11-23 03:58:53'),
+(10, 1, 'Nueva solicitud de asesoría para “Rvolucion”.', 0, '2026-11-24 14:15:16'),
+(11, 5, 'Nueva solicitud de asesoría para “Sumas 2”.', 1, '2026-11-24 14:18:28'),
+(12, 4, 'Tu solicitud para “Sumas 2” fue aceptada.', 1, '2026-11-24 14:19:19'),
+(13, 4, 'La asesoría “Sumas 2” se marcó como completada. Ya puedes dejar tu reseña.', 1, '2026-11-24 14:19:36');
 
 -- --------------------------------------------------------
 
@@ -263,9 +297,34 @@ CREATE TABLE `reseñas` (
 --
 
 INSERT INTO `reseñas` (`id`, `asesoria_id`, `estudiante_id`, `asesor_id`, `calificacion`, `comentario`, `creado_en`, `solicitud_id`, `revisor_id`, `usuario_evaluado_id`, `tipo`) VALUES
-(1, 1, 3, 1, 5, '', '2026-11-17 04:43:15', 8, 1, 3, 'usuario'),
-(2, 1, 3, 1, 5, '', '2026-11-17 04:44:10', 8, 3, NULL, 'asesoria'),
-(3, 1, 3, 1, 5, '', '2026-11-17 04:44:10', 8, 3, 1, 'asesor');
+(1, 1, 3, 1, 1, '', '2026-11-17 04:43:15', 8, 1, 3, 'usuario'),
+(2, 1, 3, 1, 3, '', '2026-11-17 04:44:10', 8, 3, NULL, 'asesoria'),
+(3, 1, 3, 1, 4, '', '2026-11-17 04:44:10', 8, 3, 1, 'asesor'),
+(4, 10, 4, 5, 5, 'no le sabe, no se aprende', '2026-11-24 14:20:16', 10, 5, 4, 'usuario'),
+(5, 10, 4, 5, 5, 'no me sirve de nada', '2026-11-24 14:22:08', 10, 4, NULL, 'asesoria'),
+(6, 10, 4, 5, 5, 'no sabe', '2026-11-24 14:22:08', 10, 4, 5, 'asesor');
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `sesiones_usuario`
+--
+
+CREATE TABLE `sesiones_usuario` (
+  `token_hash` char(64) NOT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `expira_en` datetime NOT NULL,
+  `creado_en` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Volcado de datos para la tabla `sesiones_usuario`
+--
+
+INSERT INTO `sesiones_usuario` (`token_hash`, `usuario_id`, `expira_en`, `creado_en`) VALUES
+('053edc0a921d20109ac0b7cb3622761a30fe6258c6e1b243b486b1303f20099f', 4, '2026-11-29 23:38:40', '2026-11-23 05:38:40'),
+('48a9c7418b6d6cfb0d656f1f3e401627d8d9ff713a9909977dac05d072549e95', 4, '2026-12-03 12:12:43', '2026-11-26 18:12:43'),
+('5e1cf9936fe2118b9da32e6bf5eb3e673fe223156ed9253a1decb6db45e3a8f3', 5, '2026-12-01 08:22:54', '2026-11-24 14:22:54');
 
 -- --------------------------------------------------------
 
@@ -292,12 +351,14 @@ CREATE TABLE `solicitudes` (
 INSERT INTO `solicitudes` (`id`, `asesoria_id`, `estudiante_solicitante_id`, `comentario_detallado`, `estado_solicitud`, `fecha_solicitud`, `estudiante_id`, `usuario_id`, `mensaje`) VALUES
 (1, 3, 1, 'Hola, me interesa esta asesoría.', 'aceptada', '2026-11-06 04:12:27', NULL, NULL, NULL),
 (2, 2, 1, 'Hola, me interesa tu asesoría.', 'pendiente', '2026-11-06 06:00:16', NULL, NULL, NULL),
-(3, 9, 3, NULL, 'pendiente', '2026-11-16 06:32:34', NULL, NULL, 'Hola, me interesa tu asesoría.'),
-(4, 6, 3, NULL, 'pendiente', '2026-11-16 06:32:39', NULL, NULL, 'Hola, me interesa tu asesoría.'),
+(3, 9, 3, NULL, 'completada', '2026-11-16 06:32:34', NULL, NULL, 'Hola, me interesa tu asesoría.'),
+(4, 6, 3, NULL, 'aceptada', '2026-11-16 06:32:39', NULL, NULL, 'Hola, me interesa tu asesoría.'),
 (5, 2, 1, NULL, 'pendiente', '2026-11-16 06:35:38', NULL, NULL, 'Hola, me interesa tu asesoría.'),
 (6, 2, 1, NULL, 'pendiente', '2026-11-16 06:38:00', NULL, NULL, 'Hola, me interesa tu asesoría. pls'),
-(7, 9, 3, NULL, 'aceptada', '2026-11-16 06:38:46', NULL, NULL, 'Hola, me interesa tu asesoría. a'),
-(8, 1, 3, NULL, 'completada', '2026-11-17 04:38:28', NULL, NULL, 'Hola, me interesa tu asesoría.');
+(7, 9, 3, NULL, 'completada', '2026-11-16 06:38:46', NULL, NULL, 'Hola, me interesa tu asesoría. a'),
+(8, 1, 3, NULL, 'completada', '2026-11-17 04:38:28', NULL, NULL, 'Hola, me interesa tu asesoría.'),
+(9, 9, 4, NULL, 'pendiente', '2026-11-24 14:15:16', NULL, NULL, 'Hola, me interesa tu asesoría.'),
+(10, 10, 4, NULL, 'completada', '2026-11-24 14:18:28', NULL, NULL, 'Hola, me interesa tu asesoría.');
 
 -- --------------------------------------------------------
 
@@ -323,9 +384,11 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `nombre`, `correo`, `password`, `rol`, `carrera`, `semestre`, `avatar`, `creado_en`, `codigo_unico`) VALUES
-(1, 'Carlos Pérez', 'carlos@univer.edu.mx', '1234', 'estudiante', 'TI', NULL, NULL, '2026-11-06 03:51:53', '88978'),
+(1, 'Carlos Pérez', 'carlos@univer.edu.mx', 'scrypt$2ea047fe715eb3368b89dd272633fbde$bd444ba86b3e51977b63de58bbef0febd2c4da4b186cc9bf1cba85d600b7dc11c9632dd98b57b6c245b6f521dc05b4836a6e8ecd31ccb6b34d0df9e3792c75c5', 'admin', 'TI', NULL, NULL, '2026-11-06 03:51:53', '88978'),
 (2, 'Sofía Hernández', 'sofia@univer.edu.mx', '1234', 'estudiante', NULL, NULL, NULL, '2026-11-06 03:51:53', NULL),
-(3, 'Admin Sistema', 'admin@univer.edu.mx', '1234', 'estudiante', NULL, NULL, NULL, '2026-11-06 03:51:53', '42085');
+(3, 'Admin Sistema', 'admin@univer.edu.mx', 'scrypt$89f0a921f9c04c19fb05d193808ca197$d60d568572722bb3adfc89b4e128a60d2907f561404bfdb653753d7668b8fa0244f52f9d469c80593bcfc457e1cafcaf6a0ee7658a2377b26d841d7a2b5c73bf', 'admin', NULL, NULL, NULL, '2026-11-06 03:51:53', '42085'),
+(4, 'Elliot', 'elliotmg06m@gmail.com', 'scrypt$805c621e219f1c6f4f0f79e895cf7520$0c630612eea7dedbe6ce67891a7373353431a4b95878187439961b2cd986f18aee2e392df68358407fd40821623a21db6f790eeddbcf71e0922ea38faccf8ef3', 'admin', 'TI', 7, '/uploads/avatars/usuario_4_1795412354990.jpg', '2026-11-23 04:09:25', '71453'),
+(5, 'Lucia', 'molinerolucia904@gmail.com', 'scrypt$4886535611c25470d39c5cf08e667ad7$469561d34aa3b3e79737bb7ff6381ffc4b38f1dc0cdf00f9eccf7350c389dfb8021fa6b8d36752a3e5e8c72f2fe6a562520ad48e4c51045680f2781331b1f9f4', 'estudiante', 'TI', 7, NULL, '2026-11-24 14:16:29', '66731');
 
 --
 -- Índices para tablas volcadas
@@ -345,6 +408,13 @@ ALTER TABLE `asesorias`
 ALTER TABLE `calendario_eventos`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_calendario_usuario_fecha` (`usuario_id`,`fecha`);
+
+--
+-- Indices de la tabla `codigos_login`
+--
+ALTER TABLE `codigos_login`
+  ADD PRIMARY KEY (`challenge_id`),
+  ADD KEY `idx_codigos_usuario_fecha` (`usuario_id`,`creado_en`);
 
 --
 -- Indices de la tabla `contactos`
@@ -404,6 +474,14 @@ ALTER TABLE `reseñas`
   ADD UNIQUE KEY `uniq_resena_solicitud_tipo` (`solicitud_id`,`tipo`);
 
 --
+-- Indices de la tabla `sesiones_usuario`
+--
+ALTER TABLE `sesiones_usuario`
+  ADD PRIMARY KEY (`token_hash`),
+  ADD KEY `idx_sesiones_usuario` (`usuario_id`),
+  ADD KEY `idx_sesiones_expiracion` (`expira_en`);
+
+--
 -- Indices de la tabla `solicitudes`
 --
 ALTER TABLE `solicitudes`
@@ -427,7 +505,7 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de la tabla `asesorias`
 --
 ALTER TABLE `asesorias`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `calendario_eventos`
@@ -439,7 +517,7 @@ ALTER TABLE `calendario_eventos`
 -- AUTO_INCREMENT de la tabla `contactos`
 --
 ALTER TABLE `contactos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de la tabla `evaluaciones`
@@ -475,25 +553,25 @@ ALTER TABLE `mensajes_chat`
 -- AUTO_INCREMENT de la tabla `notificaciones`
 --
 ALTER TABLE `notificaciones`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT de la tabla `reseñas`
 --
 ALTER TABLE `reseñas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de la tabla `solicitudes`
 --
 ALTER TABLE `solicitudes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT de la tabla `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Restricciones para tablas volcadas
@@ -551,29 +629,6 @@ ALTER TABLE `notificaciones`
 ALTER TABLE `solicitudes`
   ADD CONSTRAINT `solicitudes_ibfk_1` FOREIGN KEY (`asesoria_id`) REFERENCES `asesorias` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `solicitudes_ibfk_2` FOREIGN KEY (`estudiante_solicitante_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
-
--- Sesiones y códigos temporales para autenticación con verificación por correo.
-CREATE TABLE IF NOT EXISTS `sesiones_usuario` (
-  `token_hash` char(64) NOT NULL,
-  `usuario_id` int(11) NOT NULL,
-  `expira_en` datetime NOT NULL,
-  `creado_en` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`token_hash`),
-  KEY `idx_sesiones_usuario` (`usuario_id`),
-  KEY `idx_sesiones_expiracion` (`expira_en`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-CREATE TABLE IF NOT EXISTS `codigos_login` (
-  `challenge_id` char(36) NOT NULL,
-  `usuario_id` int(11) NOT NULL,
-  `codigo_hash` char(64) NOT NULL,
-  `intentos` tinyint unsigned NOT NULL DEFAULT 0,
-  `consumido` tinyint(1) NOT NULL DEFAULT 0,
-  `expira_en` datetime NOT NULL,
-  `creado_en` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`challenge_id`),
-  KEY `idx_codigos_usuario_fecha` (`usuario_id`, `creado_en`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

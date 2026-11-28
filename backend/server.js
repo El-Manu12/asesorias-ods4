@@ -690,8 +690,8 @@ app.get('/api/get_asesorias', (req, res) => {
                FROM asesorias a 
                JOIN usuarios u ON a.usuario_id = u.id 
                LEFT JOIN materias m ON a.materia_id = m.id
-               LEFT JOIN (SELECT asesoria_id, AVG(calificacion) AS promedio_calificacion, COUNT(*) AS total_reseñas FROM reseñas WHERE tipo = 'asesoria' OR solicitud_id IS NULL GROUP BY asesoria_id) rv ON rv.asesoria_id = a.id
-               LEFT JOIN (SELECT asesor_id, AVG(calificacion) AS promedio_calificacion, COUNT(*) AS total_reseñas FROM reseñas WHERE tipo = 'asesor' OR solicitud_id IS NULL GROUP BY asesor_id) rt ON rt.asesor_id = a.usuario_id`;
+               LEFT JOIN (SELECT asesoria_id, AVG(calificacion) AS promedio_calificacion, COUNT(*) AS total_reseñas FROM reseñas WHERE tipo = 'asesoria' GROUP BY asesoria_id) rv ON rv.asesoria_id = a.id
+               LEFT JOIN (SELECT asesor_id, AVG(calificacion) AS promedio_calificacion, COUNT(*) AS total_reseñas FROM reseñas WHERE tipo = 'asesor' GROUP BY asesor_id) rt ON rt.asesor_id = a.usuario_id`;
     
     let params = [];
     if (search) {
@@ -905,7 +905,7 @@ app.post('/api/actualizar_estado_solicitud', (req, res) => {
 // ==========================================
 app.get('/api/obtener_contactos', (req, res) => {
     const usuario_id = req.query.usuario_id || 0;
-    const sql = `SELECT DISTINCT u.id, u.nombre, u.correo, u.codigo_unico, u.carrera, u.semestre, c.apodo_personalizado
+    const sql = `SELECT DISTINCT u.id, u.nombre, u.correo, u.codigo_unico, u.carrera, u.semestre, u.avatar, c.apodo_personalizado
                  FROM usuarios u
                  LEFT JOIN contactos c ON c.contacto_id = u.id AND c.usuario_id = ?
                  WHERE c.usuario_id IS NOT NULL OR EXISTS (
@@ -1133,7 +1133,7 @@ app.post(['/api/crear_reseña', '/api/crear_resena'], (req, res) => {
                             return connection.commit(errCommit => {
                                 if (errCommit) return responderError(500, errCommit.message);
                                 connection.release();
-                                res.json({ success: true, message: 'Reseñas anónimas guardadas.' });
+                                res.json({ success: true, message: 'Reseñas guardadas.' });
                             });
                         }
                         const [tipoResena, calificacion, comentario, usuarioEvaluado] = registros[indice];
@@ -1153,29 +1153,32 @@ app.post(['/api/crear_reseña', '/api/crear_resena'], (req, res) => {
 
 app.get('/api/obtener_reseñas_asesor', (req, res) => {
     const asesor_id = req.query.asesor_id || 0;
-    const sql = "SELECT calificacion, comentario, creado_en FROM reseñas WHERE asesor_id = ? AND (tipo = 'asesor' OR solicitud_id IS NULL) ORDER BY creado_en DESC";
+    const sql = "SELECT r.calificacion, r.comentario, r.creado_en, u.nombre AS autor_nombre FROM reseñas r LEFT JOIN usuarios u ON u.id = COALESCE(r.revisor_id, r.estudiante_id) WHERE r.asesor_id = ? AND r.tipo = 'asesor' ORDER BY r.creado_en DESC";
     db.query(sql, [asesor_id], (err, results) => {
         if (err) return res.json({ success: false, message: err.message });
         res.json({ success: true, reseñas: results });
     });
 });
 
-app.get('/api/obtener_reseñas_asesoria', (req, res) => {
+const obtenerResenasAsesoria = (req, res) => {
     const asesoria_id = req.query.asesoria_id || 0;
-    const sql = `SELECT calificacion, comentario, creado_en,
-                        CASE WHEN tipo = 'asesor' THEN 'Asesor' ELSE 'Asesoría' END AS objetivo
-                 FROM reseñas WHERE asesoria_id = ? AND (tipo IN ('asesoria','asesor') OR solicitud_id IS NULL)
-                 ORDER BY creado_en DESC`;
+    const sql = `SELECT r.calificacion, r.comentario, r.creado_en, u.nombre AS autor_nombre,
+                        CASE WHEN r.tipo = 'asesor' THEN 'Asesor' ELSE 'Asesoría' END AS objetivo
+                 FROM reseñas r LEFT JOIN usuarios u ON u.id = COALESCE(r.revisor_id, r.estudiante_id)
+                 WHERE r.asesoria_id = ? AND r.tipo IN ('asesoria','asesor')
+                 ORDER BY r.creado_en DESC`;
     db.query(sql, [asesoria_id], (err, results) => {
         if (err) return res.status(500).json({ success: false, message: err.message });
         res.json({ success: true, reseñas: results || [] });
     });
-});
+};
+app.get('/api/obtener_resenas_asesoria', obtenerResenasAsesoria);
+app.get('/api/obtener_reseñas_asesoria', obtenerResenasAsesoria); // Compatibilidad con clientes anteriores.
 
 app.get('/api/obtener_reseñas_usuario', (req, res) => {
     const usuario_id = Number(req.query.usuario_id);
     if (!usuario_id) return res.status(400).json({ success: false, message: 'Falta el ID de usuario.' });
-    db.query("SELECT calificacion, comentario, creado_en FROM reseñas WHERE usuario_evaluado_id = ? AND tipo = 'usuario' ORDER BY creado_en DESC", [usuario_id], (err, results) => {
+    db.query("SELECT r.calificacion, r.comentario, r.creado_en, u.nombre AS autor_nombre FROM reseñas r LEFT JOIN usuarios u ON u.id = COALESCE(r.revisor_id, r.asesor_id) WHERE r.usuario_evaluado_id = ? AND r.tipo = 'usuario' ORDER BY r.creado_en DESC", [usuario_id], (err, results) => {
         if (err) return res.status(500).json({ success: false, message: err.message });
         const reseñas = results || [];
         const promedio = reseñas.length ? reseñas.reduce((suma, r) => suma + Number(r.calificacion || 0), 0) / reseñas.length : 0;

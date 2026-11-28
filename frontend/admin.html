@@ -47,6 +47,7 @@
 
                 <section class="card card-custom p-4 mb-4" aria-labelledby="tituloUsuariosAdmin">
                     <div class="admin-section-title"><div><span class="page-kicker">CUENTAS</span><h5 id="tituloUsuariosAdmin" class="fw-bold mb-1">Usuarios</h5><p class="small text-muted mb-0">Crea cuentas, modifica datos y asigna el rol de administrador.</p></div><button id="nuevoUsuario" type="button" class="btn btn-accent">＋ Crear usuario</button></div>
+                    <div class="input-group mt-3"><span class="input-group-text" aria-hidden="true">⌕</span><input type="search" id="buscarUsuariosAdmin" class="form-control" placeholder="Buscar por nombre, correo, rol o carrera" aria-label="Buscar usuarios"></div>
                     <form id="formUsuarioAdmin" class="admin-edit-form mt-3" hidden>
                         <input type="hidden" id="adminUsuarioId">
                         <div class="row g-3">
@@ -64,6 +65,7 @@
 
                 <section class="card card-custom p-4" aria-labelledby="tituloAsesoriasAdmin">
                     <div class="admin-section-title"><div><span class="page-kicker">PUBLICACIONES</span><h5 id="tituloAsesoriasAdmin" class="fw-bold mb-1">Asesorías</h5><p class="small text-muted mb-0">Crea, edita o elimina cualquier publicación del sistema.</p></div><button id="nuevaAsesoria" type="button" class="btn btn-accent">＋ Crear asesoría</button></div>
+                    <div class="input-group mt-3"><span class="input-group-text" aria-hidden="true">⌕</span><input type="search" id="buscarAsesoriasAdmin" class="form-control" placeholder="Buscar por materia, tema, tutor o modalidad" aria-label="Buscar asesorías"></div>
                     <form id="formAsesoriaAdmin" class="admin-edit-form mt-3" hidden>
                         <input type="hidden" id="adminAsesoriaId">
                         <div class="row g-3">
@@ -136,19 +138,26 @@
 
         function pintarUsuarios() {
             const cuerpo = document.getElementById('tablaUsuarios');
-            if (!usuariosAdmin.length) { cuerpo.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No hay usuarios.</td></tr>'; return; }
-            cuerpo.innerHTML = usuariosAdmin.map(usuario => `<tr><td><strong>${escaparAdmin(usuario.nombre)}</strong><small class="d-block text-muted">ID ${usuario.id}</small></td><td>${escaparAdmin(usuario.correo)}</td><td><span class="badge ${usuario.rol === 'admin' ? 'bg-primary-subtle text-primary' : 'bg-light text-secondary'}">${escaparAdmin(usuario.rol)}</span></td><td>${escaparAdmin(usuario.carrera || '—')}</td><td class="text-end text-nowrap"><button class="btn btn-outline-primary btn-sm" data-editar-usuario="${usuario.id}">Editar</button> <button class="btn btn-outline-danger btn-sm" data-borrar-usuario="${usuario.id}">Eliminar</button></td></tr>`).join('');
+            const termino = document.getElementById('buscarUsuariosAdmin').value.trim().toLocaleLowerCase();
+            const filtrados = usuariosAdmin.filter(usuario => [usuario.nombre, usuario.correo, usuario.rol, usuario.carrera, usuario.semestre, usuario.id].some(valor => String(valor ?? '').toLocaleLowerCase().includes(termino)));
+            if (!filtrados.length) { cuerpo.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">${termino ? 'No hay usuarios que coincidan con la búsqueda.' : 'No hay usuarios.'}</td></tr>`; return; }
+            cuerpo.innerHTML = filtrados.map(usuario => `<tr><td><strong>${escaparAdmin(usuario.nombre)}</strong><small class="d-block text-muted">ID ${usuario.id}</small></td><td>${escaparAdmin(usuario.correo)}</td><td><span class="badge ${usuario.rol === 'admin' ? 'bg-primary-subtle text-primary' : 'bg-light text-secondary'}">${escaparAdmin(usuario.rol)}</span></td><td>${escaparAdmin(usuario.carrera || '—')}</td><td class="text-end text-nowrap"><button class="btn btn-outline-primary btn-sm" data-editar-usuario="${usuario.id}">Editar</button> <button class="btn btn-outline-danger btn-sm" data-borrar-usuario="${usuario.id}">Eliminar</button></td></tr>`).join('');
             cuerpo.querySelectorAll('[data-editar-usuario]').forEach(button => button.addEventListener('click', () => editarUsuario(Number(button.dataset.editarUsuario))));
             cuerpo.querySelectorAll('[data-borrar-usuario]').forEach(button => button.addEventListener('click', () => eliminarUsuario(Number(button.dataset.borrarUsuario))));
         }
 
         function pintarAsesorias() {
             const cuerpo = document.getElementById('tablaAsesorias');
-            if (!asesoriasAdmin.length) { cuerpo.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No hay asesorías publicadas.</td></tr>'; return; }
-            cuerpo.innerHTML = asesoriasAdmin.map(asesoria => `<tr><td><strong>${escaparAdmin(asesoria.materia || 'General')}</strong><small class="d-block text-muted">${escaparAdmin(asesoria.titulo_tema)}</small></td><td>${escaparAdmin(asesoria.tutor_nombre)} <small class="d-block text-muted">ID ${asesoria.usuario_id}</small></td><td><span class="badge bg-primary-subtle text-primary">${escaparAdmin(asesoria.modalidad)}</span></td><td class="text-end text-nowrap"><button class="btn btn-outline-primary btn-sm" data-editar-asesoria="${asesoria.id}">Editar</button> <button class="btn btn-outline-danger btn-sm" data-borrar-asesoria="${asesoria.id}">Eliminar</button></td></tr>`).join('');
+            const termino = document.getElementById('buscarAsesoriasAdmin').value.trim().toLocaleLowerCase();
+            const filtradas = asesoriasAdmin.filter(asesoria => [asesoria.materia, asesoria.titulo_tema, asesoria.tutor_nombre, asesoria.modalidad, asesoria.descripcion, asesoria.id].some(valor => String(valor ?? '').toLocaleLowerCase().includes(termino)));
+            if (!filtradas.length) { cuerpo.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">${termino ? 'No hay asesorías que coincidan con la búsqueda.' : 'No hay asesorías publicadas.'}</td></tr>`; return; }
+            cuerpo.innerHTML = filtradas.map(asesoria => `<tr><td><strong>${escaparAdmin(asesoria.materia || 'General')}</strong><small class="d-block text-muted">${escaparAdmin(asesoria.titulo_tema)}</small></td><td>${escaparAdmin(asesoria.tutor_nombre)} <small class="d-block text-muted">ID ${asesoria.usuario_id}</small></td><td><span class="badge bg-primary-subtle text-primary">${escaparAdmin(asesoria.modalidad)}</span></td><td class="text-end text-nowrap"><button class="btn btn-outline-primary btn-sm" data-editar-asesoria="${asesoria.id}">Editar</button> <button class="btn btn-outline-danger btn-sm" data-borrar-asesoria="${asesoria.id}">Eliminar</button></td></tr>`).join('');
             cuerpo.querySelectorAll('[data-editar-asesoria]').forEach(button => button.addEventListener('click', () => editarAsesoria(Number(button.dataset.editarAsesoria))));
             cuerpo.querySelectorAll('[data-borrar-asesoria]').forEach(button => button.addEventListener('click', () => eliminarAsesoriaAdmin(Number(button.dataset.borrarAsesoria))));
         }
+
+        document.getElementById('buscarUsuariosAdmin').addEventListener('input', pintarUsuarios);
+        document.getElementById('buscarAsesoriasAdmin').addEventListener('input', pintarAsesorias);
 
         function cargarPropietarios(seleccionado = '') {
             const select = document.getElementById('adminAsesoriaUsuario');

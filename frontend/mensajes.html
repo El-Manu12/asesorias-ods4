@@ -90,7 +90,7 @@
                             <div id="chatActivo" style="display: none;" class="d-flex flex-column h-100">
                                 <div class="d-flex align-items-center justify-content-between pb-3 border-bottom mb-3">
                                     <div class="d-flex align-items-center gap-3">
-                                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150" class="avatar-img" alt="Avatar">
+                                        <img id="chatAvatar" src="uploads/usuario.png" onerror="this.onerror=null;this.src='uploads/usuario.png'" class="avatar-img" alt="Avatar">
                                         <div>
                                             <h6 class="fw-bold mb-0" id="chatNombreContacto">Nombre</h6>
                                             <span class="text-muted small" id="chatInfoContacto">correo@ejemplo.com</span>
@@ -261,9 +261,10 @@
                 const nombreJson = JSON.stringify(nombreMostrado || 'Contacto').replace(/'/g, '&#39;');
                 const correoJson = JSON.stringify(c.correo || '').replace(/'/g, '&#39;');
                 const codigoJson = JSON.stringify(c.codigo_unico || 'S/N').replace(/'/g, '&#39;');
+                const avatarJson = JSON.stringify(c.avatar || 'uploads/usuario.png').replace(/'/g, '&#39;');
                 return `
-                    <div class="d-flex align-items-center gap-3 p-2 rounded contact-item ${activoClass}" onclick='seleccionarContacto(${c.id}, ${nombreJson}, ${correoJson}, ${codigoJson})'>
-                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150" class="avatar-img" alt="Avatar">
+                    <div class="d-flex align-items-center gap-3 p-2 rounded contact-item ${activoClass}" onclick='seleccionarContacto(${c.id}, ${nombreJson}, ${correoJson}, ${codigoJson}, ${avatarJson})'>
+                        <img src="${escaparHtml(c.avatar || 'uploads/usuario.png')}" onerror="this.onerror=null;this.src='uploads/usuario.png'" class="avatar-img" alt="Avatar">
                         <div class="flex-grow-1 overflow-hidden">
                             <h6 class="fw-bold mb-0 text-truncate">${escaparHtml(nombreMostrado || 'Contacto')}</h6>
                             <small class="text-muted text-truncate d-block">ID: ${escaparHtml(c.codigo_unico || 'N/D')}</small>
@@ -329,13 +330,16 @@
             } catch (e) { console.error(e); }
         }
 
-        async function seleccionarContacto(id, nombre, correo, codigo) {
+        async function seleccionarContacto(id, nombre, correo, codigo, avatar) {
             contactoActivoId = id;
             document.getElementById('chatVacio').style.display = 'none';
             document.getElementById('chatActivo').style.display = 'flex';
             document.getElementById('chatNombreContacto').textContent = nombre;
             document.getElementById('chatInfoContacto').textContent = correo;
             document.getElementById('chatCodigoBadge').textContent = `ID: ${codigo}`;
+            const chatAvatar = document.getElementById('chatAvatar');
+            chatAvatar.src = avatar || 'uploads/usuario.png';
+            chatAvatar.onerror = () => { chatAvatar.onerror = null; chatAvatar.src = 'uploads/usuario.png'; };
 
             if(intervaloChat) clearInterval(intervaloChat);
             await cargarContextosChat();
