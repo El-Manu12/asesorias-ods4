@@ -323,9 +323,9 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `nombre`, `correo`, `password`, `rol`, `carrera`, `semestre`, `avatar`, `creado_en`, `codigo_unico`) VALUES
-(1, 'Carlos Pérez', 'carlos@univer.edu.mx', '1234', 'admin', 'TI', NULL, NULL, '2026-11-06 03:51:53', '88978'),
+(1, 'Carlos Pérez', 'carlos@univer.edu.mx', '1234', 'estudiante', 'TI', NULL, NULL, '2026-11-06 03:51:53', '88978'),
 (2, 'Sofía Hernández', 'sofia@univer.edu.mx', '1234', 'estudiante', NULL, NULL, NULL, '2026-11-06 03:51:53', NULL),
-(3, 'Admin Sistema', 'admin@univer.edu.mx', '1234', 'admin', NULL, NULL, NULL, '2026-11-06 03:51:53', '42085');
+(3, 'Admin Sistema', 'admin@univer.edu.mx', '1234', 'estudiante', NULL, NULL, NULL, '2026-11-06 03:51:53', '42085');
 
 --
 -- Índices para tablas volcadas
@@ -551,6 +551,29 @@ ALTER TABLE `notificaciones`
 ALTER TABLE `solicitudes`
   ADD CONSTRAINT `solicitudes_ibfk_1` FOREIGN KEY (`asesoria_id`) REFERENCES `asesorias` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `solicitudes_ibfk_2` FOREIGN KEY (`estudiante_solicitante_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
+
+-- Sesiones y códigos temporales para autenticación con verificación por correo.
+CREATE TABLE IF NOT EXISTS `sesiones_usuario` (
+  `token_hash` char(64) NOT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `expira_en` datetime NOT NULL,
+  `creado_en` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`token_hash`),
+  KEY `idx_sesiones_usuario` (`usuario_id`),
+  KEY `idx_sesiones_expiracion` (`expira_en`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `codigos_login` (
+  `challenge_id` char(36) NOT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `codigo_hash` char(64) NOT NULL,
+  `intentos` tinyint unsigned NOT NULL DEFAULT 0,
+  `consumido` tinyint(1) NOT NULL DEFAULT 0,
+  `expira_en` datetime NOT NULL,
+  `creado_en` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`challenge_id`),
+  KEY `idx_codigos_usuario_fecha` (`usuario_id`, `creado_en`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

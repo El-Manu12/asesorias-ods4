@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración - AulaConnect</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="d-flex">
+        <aside id="sidebar-wrapper">
+            <a href="index.html" class="sidebar-heading text-decoration-none"><span>🎓</span><span>AulaConnect</span></a>
+            <div class="sidebar-menu pt-3">
+                <div class="menu-label">NAVEGACIÓN</div>
+                <a href="index.html" class="nav-link-custom"><span>🏠</span> Volver al Inicio</a>
+                <div class="menu-label mt-2">MENÚ PRINCIPAL</div>
+                <a href="dashboard.html" class="nav-link-custom"><span>📊</span> Dashboard</a>
+                <a href="explorar.html" class="nav-link-custom"><span>🔍</span> Explorar Asesorías</a>
+                <a href="publicar.html" class="nav-link-custom"><span>➕</span> Publicar Asesoría</a>
+                <a href="solicitudes.html" class="nav-link-custom"><span>📬</span> Mis Solicitudes</a>
+                <a href="perfil.html" class="nav-link-custom"><span>👤</span> Mi Perfil</a>
+                <div class="menu-label mt-4">COMUNICACIÓN</div>
+                <a href="mensajes.html" class="nav-link-custom"><span>💬</span> Mensajes y Chat</a>
+                <div class="menu-label mt-4">GESTIÓN</div>
+                <a href="admin.html" class="nav-link-custom active" id="enlaceAdminNav" hidden><span>🛡️</span> Administración</a>
+                <a href="login.html" class="nav-link-custom" id="btnSesionNav"><span>🔑</span> Cerrar Sesión</a>
+            </div>
+        </aside>
+
+        <main id="page-content-wrapper">
+            <nav class="top-navbar d-flex justify-content-between align-items-center sticky-top">
+                <div class="fw-bold text-secondary">Panel de administración</div>
+                <div class="d-flex align-items-center gap-3"><div id="notifBadgeContainer"></div><div id="areaUsuarioSesion"><span class="fw-bold small text-primary" id="lblUsuario"></span></div></div>
+            </nav>
+            <div class="container-fluid p-4 admin-page">
+                <div class="page-intro mb-4"><span class="page-kicker">CONTROL DEL SISTEMA</span><h3 class="fw-bold mb-1">Administración</h3><p class="text-muted mb-0">Gestiona cuentas y publicaciones de asesorías desde un solo lugar.</p></div>
+                <div id="adminAviso" class="alert d-none" role="status"></div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6 col-xl-3"><div class="card card-custom admin-stat p-3"><span class="metric-icon">👥</span><small>Usuarios registrados</small><strong id="totalUsuarios">—</strong></div></div>
+                    <div class="col-sm-6 col-xl-3"><div class="card card-custom admin-stat p-3"><span class="metric-icon">📚</span><small>Asesorías publicadas</small><strong id="totalAsesorias">—</strong></div></div>
+                    <div class="col-sm-6 col-xl-3"><div class="card card-custom admin-stat p-3"><span class="metric-icon">🛡️</span><small>Administradores</small><strong id="totalAdmins">—</strong></div></div>
+                    <div class="col-sm-6 col-xl-3"><div class="card card-custom admin-stat p-3"><span class="metric-icon">🔐</span><small>Permisos</small><strong>Protegidos</strong></div></div>
+                </div>
+
+                <section class="card card-custom p-4 mb-4" aria-labelledby="tituloUsuariosAdmin">
+                    <div class="admin-section-title"><div><span class="page-kicker">CUENTAS</span><h5 id="tituloUsuariosAdmin" class="fw-bold mb-1">Usuarios</h5><p class="small text-muted mb-0">Crea cuentas, modifica datos y asigna el rol de administrador.</p></div><button id="nuevoUsuario" type="button" class="btn btn-accent">＋ Crear usuario</button></div>
+                    <form id="formUsuarioAdmin" class="admin-edit-form mt-3" hidden>
+                        <input type="hidden" id="adminUsuarioId">
+                        <div class="row g-3">
+                            <div class="col-md-6"><label class="form-label small fw-semibold" for="adminNombre">Nombre</label><input class="form-control" id="adminNombre" required maxlength="100"></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold" for="adminCorreo">Correo</label><input class="form-control" type="email" id="adminCorreo" required maxlength="100"></div>
+                            <div class="col-md-4"><label class="form-label small fw-semibold" for="adminRol">Rol</label><select class="form-select" id="adminRol"><option value="estudiante">Estudiante</option><option value="directivo">Directivo</option><option value="admin">Administrador</option></select></div>
+                            <div class="col-md-4"><label class="form-label small fw-semibold" for="adminCarrera">Carrera</label><input class="form-control" id="adminCarrera" maxlength="100"></div>
+                            <div class="col-md-4"><label class="form-label small fw-semibold" for="adminSemestre">Semestre</label><input class="form-control" type="number" min="1" max="20" id="adminSemestre"></div>
+                            <div class="col-md-8"><label class="form-label small fw-semibold" for="adminPassword">Contraseña <span id="ayudaPassword" class="text-muted fw-normal">(mínimo 8 caracteres)</span></label><input class="form-control" type="password" id="adminPassword" minlength="8" autocomplete="new-password"></div>
+                            <div class="col-md-4 d-flex align-items-end gap-2"><button class="btn btn-primary flex-fill" type="submit">Guardar</button><button class="btn btn-outline-secondary" type="button" id="cancelarUsuario">Cancelar</button></div>
+                        </div>
+                    </form>
+                    <div class="table-responsive mt-3"><table class="table align-middle admin-table"><thead><tr><th>Usuario</th><th>Correo</th><th>Rol</th><th>Carrera</th><th class="text-end">Acciones</th></tr></thead><tbody id="tablaUsuarios"><tr><td colspan="5" class="text-center text-muted py-4">Cargando usuarios…</td></tr></tbody></table></div>
+                </section>
+
+                <section class="card card-custom p-4" aria-labelledby="tituloAsesoriasAdmin">
+                    <div class="admin-section-title"><div><span class="page-kicker">PUBLICACIONES</span><h5 id="tituloAsesoriasAdmin" class="fw-bold mb-1">Asesorías</h5><p class="small text-muted mb-0">Crea, edita o elimina cualquier publicación del sistema.</p></div><button id="nuevaAsesoria" type="button" class="btn btn-accent">＋ Crear asesoría</button></div>
+                    <form id="formAsesoriaAdmin" class="admin-edit-form mt-3" hidden>
+                        <input type="hidden" id="adminAsesoriaId">
+                        <div class="row g-3">
+                            <div class="col-md-4"><label class="form-label small fw-semibold" for="adminAsesoriaUsuario">Tutor / propietario</label><select class="form-select" id="adminAsesoriaUsuario" required></select></div>
+                            <div class="col-md-4"><label class="form-label small fw-semibold" for="adminAsesoriaMateria">Materia</label><input class="form-control" id="adminAsesoriaMateria" required maxlength="100"></div>
+                            <div class="col-md-4"><label class="form-label small fw-semibold" for="adminAsesoriaModalidad">Modalidad</label><select class="form-select" id="adminAsesoriaModalidad"><option value="virtual">Virtual</option><option value="presencial">Presencial</option><option value="híbrida">Híbrida</option></select></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold" for="adminAsesoriaTitulo">Tema</label><input class="form-control" id="adminAsesoriaTitulo" required maxlength="150"></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold" for="adminAsesoriaDias">Días disponibles</label><input class="form-control" id="adminAsesoriaDias" placeholder="Lunes y miércoles"></div>
+                            <div class="col-md-3"><label class="form-label small fw-semibold" for="adminHoraPresencialInicio">Inicio presencial</label><input class="form-control" type="time" id="adminHoraPresencialInicio"></div>
+                            <div class="col-md-3"><label class="form-label small fw-semibold" for="adminHoraPresencialFin">Fin presencial</label><input class="form-control" type="time" id="adminHoraPresencialFin"></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold" for="adminLugarPresencial">Lugar presencial</label><input class="form-control" id="adminLugarPresencial" maxlength="255"></div>
+                            <div class="col-md-3"><label class="form-label small fw-semibold" for="adminHoraDigitalInicio">Inicio virtual</label><input class="form-control" type="time" id="adminHoraDigitalInicio"></div>
+                            <div class="col-md-3"><label class="form-label small fw-semibold" for="adminHoraDigitalFin">Fin virtual</label><input class="form-control" type="time" id="adminHoraDigitalFin"></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold" for="adminPlataformaDigital">Plataforma virtual</label><input class="form-control" id="adminPlataformaDigital" maxlength="255"></div>
+                            <div class="col-12"><label class="form-label small fw-semibold" for="adminAsesoriaDescripcion">Descripción</label><textarea class="form-control" id="adminAsesoriaDescripcion" rows="3" required></textarea></div>
+                            <div class="col-12 d-flex justify-content-end gap-2"><button class="btn btn-outline-secondary" type="button" id="cancelarAsesoria">Cancelar</button><button class="btn btn-primary" type="submit">Guardar asesoría</button></div>
+                        </div>
+                    </form>
+                    <div class="table-responsive mt-3"><table class="table align-middle admin-table"><thead><tr><th>Materia y tema</th><th>Tutor</th><th>Modalidad</th><th class="text-end">Acciones</th></tr></thead><tbody id="tablaAsesorias"><tr><td colspan="4" class="text-center text-muted py-4">Cargando asesorías…</td></tr></tbody></table></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        const tokenAdmin = localStorage.getItem('tokenSesion') || '';
+        const usuarioAdmin = JSON.parse(localStorage.getItem('usuarioActual') || 'null');
+        let usuariosAdmin = [];
+        let asesoriasAdmin = [];
+        const escaparAdmin = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
+        const headersAdmin = { 'Content-Type': 'application/json', Authorization: `Bearer ${tokenAdmin}` };
+
+        if (usuarioAdmin?.rol !== 'admin' || !tokenAdmin) mostrarAviso('danger', 'Esta sección requiere una sesión de administrador verificada. Inicia sesión con tu cuenta de administrador.');
+        else {
+            document.getElementById('lblUsuario').textContent = `👤 ${usuarioAdmin.nombre}`;
+            document.getElementById('btnSesionNav').onclick = event => { event.preventDefault(); localStorage.removeItem('usuarioActual'); localStorage.removeItem('tokenSesion'); window.location.href = 'index.html'; };
+            cargarAdministracion();
+        }
+
+        function mostrarAviso(tipo, texto) {
+            const aviso = document.getElementById('adminAviso');
+            aviso.className = `alert alert-${tipo}`;
+            aviso.textContent = texto;
+            aviso.classList.remove('d-none');
+            aviso.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        async function apiAdmin(url, opciones = {}) {
+            const res = await fetch(`${API_URL}${url}`, { ...opciones, headers: { ...headersAdmin, ...(opciones.headers || {}) } });
+            const data = await res.json();
+            if (!res.ok || !data.success) throw new Error(data.message || 'No se pudo completar la operación.');
+            return data;
+        }
+
+        async function cargarAdministracion() {
+            try {
+                const [respuestaUsuarios, respuestaAsesorias] = await Promise.all([apiAdmin('/admin/usuarios'), apiAdmin('/admin/asesorias')]);
+                usuariosAdmin = respuestaUsuarios.usuarios || [];
+                asesoriasAdmin = respuestaAsesorias.asesorias || [];
+                document.getElementById('totalUsuarios').textContent = usuariosAdmin.length;
+                document.getElementById('totalAsesorias').textContent = asesoriasAdmin.length;
+                document.getElementById('totalAdmins').textContent = usuariosAdmin.filter(usuario => usuario.rol === 'admin').length;
+                pintarUsuarios();
+                pintarAsesorias();
+                cargarPropietarios();
+            } catch (error) { mostrarAviso('danger', error.message); }
+        }
+
+        function pintarUsuarios() {
+            const cuerpo = document.getElementById('tablaUsuarios');
+            if (!usuariosAdmin.length) { cuerpo.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No hay usuarios.</td></tr>'; return; }
+            cuerpo.innerHTML = usuariosAdmin.map(usuario => `<tr><td><strong>${escaparAdmin(usuario.nombre)}</strong><small class="d-block text-muted">ID ${usuario.id}</small></td><td>${escaparAdmin(usuario.correo)}</td><td><span class="badge ${usuario.rol === 'admin' ? 'bg-primary-subtle text-primary' : 'bg-light text-secondary'}">${escaparAdmin(usuario.rol)}</span></td><td>${escaparAdmin(usuario.carrera || '—')}</td><td class="text-end text-nowrap"><button class="btn btn-outline-primary btn-sm" data-editar-usuario="${usuario.id}">Editar</button> <button class="btn btn-outline-danger btn-sm" data-borrar-usuario="${usuario.id}">Eliminar</button></td></tr>`).join('');
+            cuerpo.querySelectorAll('[data-editar-usuario]').forEach(button => button.addEventListener('click', () => editarUsuario(Number(button.dataset.editarUsuario))));
+            cuerpo.querySelectorAll('[data-borrar-usuario]').forEach(button => button.addEventListener('click', () => eliminarUsuario(Number(button.dataset.borrarUsuario))));
+        }
+
+        function pintarAsesorias() {
+            const cuerpo = document.getElementById('tablaAsesorias');
+            if (!asesoriasAdmin.length) { cuerpo.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No hay asesorías publicadas.</td></tr>'; return; }
+            cuerpo.innerHTML = asesoriasAdmin.map(asesoria => `<tr><td><strong>${escaparAdmin(asesoria.materia || 'General')}</strong><small class="d-block text-muted">${escaparAdmin(asesoria.titulo_tema)}</small></td><td>${escaparAdmin(asesoria.tutor_nombre)} <small class="d-block text-muted">ID ${asesoria.usuario_id}</small></td><td><span class="badge bg-primary-subtle text-primary">${escaparAdmin(asesoria.modalidad)}</span></td><td class="text-end text-nowrap"><button class="btn btn-outline-primary btn-sm" data-editar-asesoria="${asesoria.id}">Editar</button> <button class="btn btn-outline-danger btn-sm" data-borrar-asesoria="${asesoria.id}">Eliminar</button></td></tr>`).join('');
+            cuerpo.querySelectorAll('[data-editar-asesoria]').forEach(button => button.addEventListener('click', () => editarAsesoria(Number(button.dataset.editarAsesoria))));
+            cuerpo.querySelectorAll('[data-borrar-asesoria]').forEach(button => button.addEventListener('click', () => eliminarAsesoriaAdmin(Number(button.dataset.borrarAsesoria))));
+        }
+
+        function cargarPropietarios(seleccionado = '') {
+            const select = document.getElementById('adminAsesoriaUsuario');
+            select.innerHTML = usuariosAdmin.map(usuario => `<option value="${usuario.id}">${escaparAdmin(usuario.nombre)} · ${escaparAdmin(usuario.correo)}</option>`).join('');
+            if (seleccionado) select.value = String(seleccionado);
+        }
+
+        const formUsuario = document.getElementById('formUsuarioAdmin');
+        document.getElementById('nuevoUsuario').addEventListener('click', () => {
+            formUsuario.reset(); document.getElementById('adminUsuarioId').value = ''; document.getElementById('adminPassword').required = true;
+            document.getElementById('ayudaPassword').textContent = '(mínimo 8 caracteres)'; formUsuario.hidden = false; formUsuario.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+        document.getElementById('cancelarUsuario').addEventListener('click', () => { formUsuario.hidden = true; formUsuario.reset(); });
+        function editarUsuario(id) {
+            const usuario = usuariosAdmin.find(item => item.id === id); if (!usuario) return;
+            document.getElementById('adminUsuarioId').value = usuario.id;
+            document.getElementById('adminNombre').value = usuario.nombre || '';
+            document.getElementById('adminCorreo').value = usuario.correo || '';
+            document.getElementById('adminRol').value = usuario.rol || 'estudiante';
+            document.getElementById('adminCarrera').value = usuario.carrera || '';
+            document.getElementById('adminSemestre').value = usuario.semestre || '';
+            document.getElementById('adminPassword').value = ''; document.getElementById('adminPassword').required = false;
+            document.getElementById('ayudaPassword').textContent = '(déjala vacía para conservarla)';
+            formUsuario.hidden = false; formUsuario.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        formUsuario.addEventListener('submit', async event => {
+            event.preventDefault();
+            const id = document.getElementById('adminUsuarioId').value;
+            const body = { nombre: document.getElementById('adminNombre').value, correo: document.getElementById('adminCorreo').value, rol: document.getElementById('adminRol').value, carrera: document.getElementById('adminCarrera').value, semestre: document.getElementById('adminSemestre').value, password: document.getElementById('adminPassword').value };
+            try { await apiAdmin(id ? `/admin/usuarios/${id}` : '/admin/usuarios', { method: id ? 'PUT' : 'POST', body: JSON.stringify(body) }); formUsuario.hidden = true; formUsuario.reset(); mostrarAviso('success', id ? 'Usuario actualizado.' : 'Usuario creado.'); await cargarAdministracion(); }
+            catch (error) { mostrarAviso('danger', error.message); }
+        });
+
+        async function eliminarUsuario(id) {
+            const usuario = usuariosAdmin.find(item => item.id === id);
+            if (!usuario || !confirm(`¿Eliminar la cuenta de ${usuario.nombre}? Se borrarán sus asesorías y solicitudes relacionadas.`)) return;
+            try { await apiAdmin(`/admin/usuarios/${id}`, { method: 'DELETE' }); mostrarAviso('success', 'Usuario eliminado.'); await cargarAdministracion(); }
+            catch (error) { mostrarAviso('danger', error.message); }
+        }
+
+        const formAsesoria = document.getElementById('formAsesoriaAdmin');
+        document.getElementById('nuevaAsesoria').addEventListener('click', () => { formAsesoria.reset(); document.getElementById('adminAsesoriaId').value = ''; cargarPropietarios(); formAsesoria.hidden = false; formAsesoria.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+        document.getElementById('cancelarAsesoria').addEventListener('click', () => { formAsesoria.hidden = true; formAsesoria.reset(); });
+        function editarAsesoria(id) {
+            const asesoria = asesoriasAdmin.find(item => item.id === id); if (!asesoria) return;
+            document.getElementById('adminAsesoriaId').value = asesoria.id;
+            cargarPropietarios(asesoria.usuario_id);
+            document.getElementById('adminAsesoriaMateria').value = asesoria.materia || '';
+            document.getElementById('adminAsesoriaTitulo').value = asesoria.titulo_tema || '';
+            document.getElementById('adminAsesoriaDescripcion').value = asesoria.descripcion || '';
+            document.getElementById('adminAsesoriaModalidad').value = String(asesoria.modalidad || 'virtual').toLowerCase();
+            document.getElementById('adminAsesoriaDias').value = asesoria.dias_semana || '';
+            document.getElementById('adminHoraPresencialInicio').value = asesoria.hora_inicio_presencial || '';
+            document.getElementById('adminHoraPresencialFin').value = asesoria.hora_fin_presencial || '';
+            document.getElementById('adminLugarPresencial').value = asesoria.lugares_presencial || '';
+            document.getElementById('adminHoraDigitalInicio').value = asesoria.hora_inicio_digital || '';
+            document.getElementById('adminHoraDigitalFin').value = asesoria.hora_fin_digital || '';
+            document.getElementById('adminPlataformaDigital').value = asesoria.plataformas_digital || '';
+            formAsesoria.hidden = false; formAsesoria.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        formAsesoria.addEventListener('submit', async event => {
+            event.preventDefault();
+            const body = { id: document.getElementById('adminAsesoriaId').value, usuario_id: document.getElementById('adminAsesoriaUsuario').value, materia: document.getElementById('adminAsesoriaMateria').value, titulo_tema: document.getElementById('adminAsesoriaTitulo').value, modalidad: document.getElementById('adminAsesoriaModalidad').value, dias_semana: document.getElementById('adminAsesoriaDias').value, hora_inicio_presencial: document.getElementById('adminHoraPresencialInicio').value, hora_fin_presencial: document.getElementById('adminHoraPresencialFin').value, lugares_presencial: document.getElementById('adminLugarPresencial').value, hora_inicio_digital: document.getElementById('adminHoraDigitalInicio').value, hora_fin_digital: document.getElementById('adminHoraDigitalFin').value, plataformas_digital: document.getElementById('adminPlataformaDigital').value, descripcion: document.getElementById('adminAsesoriaDescripcion').value };
+            try { await apiAdmin('/admin/asesorias/guardar', { method: 'POST', body: JSON.stringify(body) }); formAsesoria.hidden = true; formAsesoria.reset(); mostrarAviso('success', body.id ? 'Asesoría actualizada.' : 'Asesoría creada.'); await cargarAdministracion(); }
+            catch (error) { mostrarAviso('danger', error.message); }
+        });
+
+        async function eliminarAsesoriaAdmin(id) {
+            const asesoria = asesoriasAdmin.find(item => item.id === id);
+            if (!asesoria || !confirm(`¿Eliminar “${asesoria.titulo_tema}”? Sus solicitudes y reseñas relacionadas también se eliminarán.`)) return;
+            try { await apiAdmin(`/admin/asesorias/${id}`, { method: 'DELETE' }); mostrarAviso('success', 'Asesoría eliminada.'); await cargarAdministracion(); }
+            catch (error) { mostrarAviso('danger', error.message); }
+        }
+    </script>
+    <script src="js/notificaciones.js"></script>
+    <script src="js/calendario.js"></script>
+</body>
+</html>

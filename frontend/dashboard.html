@@ -45,35 +45,54 @@
             </nav>
 
             <div class="container-fluid p-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="dashboard-welcome d-flex justify-content-between align-items-center mb-4">
                     <div>
+                        <span class="welcome-kicker">AULACONNECT · ESPACIO ACADÉMICO</span>
                         <h3 class="fw-bold m-0" id="saludoUsuario">¡Hola!</h3>
                         <p class="text-muted m-0">Gestiona tus asesorías y solicitudes de forma sencilla.</p>
+                        <a href="explorar.html" class="welcome-link">Encuentra apoyo para tu siguiente meta <span aria-hidden="true">→</span></a>
                     </div>
-                    <a href="publicar.html" class="btn btn-accent">+ Ofrecer Ayuda</a>
+                    <div class="d-flex align-items-center gap-4">
+                        <div class="welcome-art" aria-hidden="true"><span class="art-spark">✦</span><div class="art-book">📖</div><div class="art-note">Aprender<br>compartiendo</div></div>
+                        <a href="publicar.html" class="btn btn-accent">＋ Ofrecer ayuda</a>
+                    </div>
                 </div>
 
                 <!-- MÉTRICAS -->
                 <div class="row g-3 mb-4">
                     <div class="col-md-4">
-                        <div class="card card-custom p-3">
-                            <span class="text-muted small fw-semibold">Asesorías Impartidas</span>
+                        <div class="card card-custom dashboard-metric p-3">
+                            <div class="d-flex align-items-center gap-3"><span class="metric-icon" aria-hidden="true">📚</span><div><span class="text-muted small fw-semibold">Asesorías Impartidas</span>
                             <h3 class="fw-bold m-0 mt-1" id="metricAsesorias">0</h3>
+                            </div></div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card card-custom p-3">
-                            <span class="text-muted small fw-semibold">Solicitudes Recibidas</span>
+                        <div class="card card-custom dashboard-metric p-3">
+                            <div class="d-flex align-items-center gap-3"><span class="metric-icon" aria-hidden="true">📥</span><div><span class="text-muted small fw-semibold">Solicitudes Recibidas</span>
                             <h3 class="fw-bold m-0 mt-1" id="metricRecibidas">0</h3>
+                            </div></div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="card card-custom p-3">
-                            <span class="text-muted small fw-semibold">Solicitudes Enviadas</span>
+                        <div class="card card-custom dashboard-metric p-3">
+                            <div class="d-flex align-items-center gap-3"><span class="metric-icon" aria-hidden="true">📤</span><div><span class="text-muted small fw-semibold">Solicitudes Enviadas</span>
                             <h3 class="fw-bold m-0 mt-1" id="metricEnviadas">0</h3>
+                            </div></div>
                         </div>
                     </div>
                 </div>
+
+                <section class="card card-custom p-4 mb-4" aria-labelledby="tituloGraficaSolicitudes">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div><h5 class="fw-bold mb-1" id="tituloGraficaSolicitudes">Resumen de solicitudes</h5><p class="text-muted small mb-0">Comparación de las solicitudes recibidas y enviadas.</p></div>
+                        <span class="chart-mark" aria-hidden="true">↗</span>
+                    </div>
+                    <div id="graficaSolicitudes" class="solicitudes-chart" aria-live="polite">
+                        <div class="chart-row"><span>Recibidas</span><div class="chart-track"><div class="chart-fill" style="width:0%"></div></div><strong>0</strong></div>
+                        <div class="chart-row"><span>Enviadas</span><div class="chart-track"><div class="chart-fill chart-fill-soft" style="width:0%"></div></div><strong>0</strong></div>
+                    </div>
+                </section>
 
                 <h5 class="fw-bold mb-3">Asesorías Recientes</h5>
                 <div id="gridDashboard" class="row g-4">
@@ -94,7 +113,7 @@
             const btnNav = document.getElementById('btnSesionNav');
             btnNav.innerHTML = `<span>🚪</span> Cerrar Sesión`;
             btnNav.className = "nav-link-custom text-danger";
-            btnNav.onclick = (e) => { e.preventDefault(); localStorage.removeItem('usuarioActual'); window.location.href = 'index.html'; };
+            btnNav.onclick = (e) => { e.preventDefault(); localStorage.removeItem('usuarioActual'); localStorage.removeItem('tokenSesion'); window.location.href = 'index.html'; };
         }
 
         async function cargarDashboard() {
@@ -143,14 +162,26 @@
                     const resSol = await fetch(`${API_URL}/obtener_solicitudes?usuario_id=${usuarioActual.id}`);
                     const dataSol = await resSol.json();
                     if(dataSol.success) {
-                        document.getElementById('metricRecibidas').textContent = (dataSol.recibidas || []).length;
-                        document.getElementById('metricEnviadas').textContent = (dataSol.hechas || []).length;
+                        const recibidas = (dataSol.recibidas || []).length;
+                        const enviadas = (dataSol.hechas || []).length;
+                        document.getElementById('metricRecibidas').textContent = recibidas;
+                        document.getElementById('metricEnviadas').textContent = enviadas;
+                        actualizarGraficaSolicitudes(recibidas, enviadas);
                     }
                 }
 
             } catch (err) { 
                 console.error("Error al cargar dashboard:", err); 
             }
+        }
+
+        function actualizarGraficaSolicitudes(recibidas, enviadas) {
+            const maximo = Math.max(recibidas, enviadas, 1);
+            const porcentajeRecibidas = Math.round(recibidas / maximo * 100);
+            const porcentajeEnviadas = Math.round(enviadas / maximo * 100);
+            document.getElementById('graficaSolicitudes').innerHTML = `
+                <div class="chart-row"><span>Recibidas</span><div class="chart-track"><div class="chart-fill" style="width:${porcentajeRecibidas}%"></div></div><strong>${recibidas}</strong></div>
+                <div class="chart-row"><span>Enviadas</span><div class="chart-track"><div class="chart-fill chart-fill-soft" style="width:${porcentajeEnviadas}%"></div></div><strong>${enviadas}</strong></div>`;
         }
 
         document.addEventListener('DOMContentLoaded', () => cargarDashboard());

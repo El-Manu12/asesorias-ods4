@@ -29,9 +29,18 @@
             <button type="submit" class="btn btn-primary w-100 mb-3">Ingresar</button>
         </form>
 
+        <form id="formCodigoLogin" hidden>
+            <div class="text-center mb-3"><div class="verification-icon">✉</div><h5 class="fw-bold mb-1">Confirma tu correo</h5><p class="text-muted small mb-0" id="destinoCodigo">Enviamos un código de seis dígitos.</p></div>
+            <label class="form-label small fw-semibold" for="codigoLogin">Código de verificación</label>
+            <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" id="codigoLogin" class="form-control verification-code-input mb-3" placeholder="000000" required>
+            <button type="submit" class="btn btn-primary w-100 mb-2">Confirmar e ingresar</button>
+            <button type="button" id="volverLogin" class="btn btn-link w-100 text-decoration-none">Volver al inicio de sesión</button>
+        </form>
+
         <div class="text-center small">
             <span class="text-muted">¿No tienes cuenta?</span> <a href="registro.html" class="text-decoration-none fw-semibold">Regístrate aquí</a>
         </div>
+        <div id="bootstrapAdminLink" class="text-center small mt-3" hidden><a href="configurar-admin.html" class="text-decoration-none fw-semibold">Configurar el primer administrador</a></div>
     </div>
 
     <!-- MODAL MENSAJE GENERAL -->
@@ -49,6 +58,7 @@
     <script>
         // Apuntamos correctamente a la API de Node.js
         const API_URL = 'http://localhost:3000/api';
+        let challengeIdLogin = '';
 
         function mostrarMensaje(titulo, cuerpo) {
             document.getElementById('msgTitulo').textContent = titulo;
@@ -71,17 +81,54 @@
                 
                 const data = await res.json();
 
-                if (data.success) {
-                    localStorage.setItem('usuarioActual', JSON.stringify(data.usuario));
+                if (data.success && data.verificacion_requerida) {
+                    challengeIdLogin = data.challenge_id;
+                    document.getElementById('destinoCodigo').textContent = `Enviamos el código a ${data.correo}. Caduca en 10 minutos.`;
+                    document.getElementById('formLogin').hidden = true;
+                    document.getElementById('formCodigoLogin').hidden = false;
+                    document.getElementById('codigoLogin').focus();
+                } else if (data.success) {
+                    const usuarioRespuesta = data.usuario || data.user || (data.id ? data : null);
+                    if (!usuarioRespuesta || !usuarioRespuesta.id || !data.token) {
+                        mostrarMensaje('Servidor anterior', 'La contraseña es correcta, pero esta versión no creó una sesión verificada. Inicia AulaConnect desde el backend actualizado y vuelve a intentarlo.');
+                        return;
+                    }
+                    const usuarioLimpio = { ...usuarioRespuesta };
+                    delete usuarioLimpio.password;
+                    localStorage.setItem('usuarioActual', JSON.stringify(usuarioLimpio));
+                    localStorage.setItem('tokenSesion', data.token);
                     window.location.href = 'dashboard.html';
                 } else {
-                    mostrarMensaje('Acceso Denegado', data.message || 'Credenciales incorrectas.');
+                    mostrarMensaje(res.status === 503 ? 'No se pudo enviar el código' : 'Acceso Denegado', data.message || 'Credenciales incorrectas.');
                 }
             } catch (err) {
                 console.error("Error en login:", err);
                 mostrarMensaje('Error', 'No se pudo conectar con el servidor de Node.js.');
             }
         });
+
+        document.getElementById('formCodigoLogin').addEventListener('submit', async event => {
+            event.preventDefault();
+            try {
+                const res = await fetch(`${API_URL}/verificar_login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ challenge_id: challengeIdLogin, codigo: document.getElementById('codigoLogin').value.trim() }) });
+                const data = await res.json();
+                if (!res.ok || !data.success) return mostrarMensaje('No se pudo verificar', data.message || 'Revisa el código e inténtalo de nuevo.');
+                localStorage.setItem('usuarioActual', JSON.stringify(data.usuario));
+                localStorage.setItem('tokenSesion', data.token);
+                window.location.href = 'dashboard.html';
+            } catch (error) { mostrarMensaje('Error', 'No fue posible comprobar el código. Revisa tu conexión.'); }
+        });
+
+        document.getElementById('volverLogin').addEventListener('click', () => {
+            challengeIdLogin = '';
+            document.getElementById('codigoLogin').value = '';
+            document.getElementById('formCodigoLogin').hidden = true;
+            document.getElementById('formLogin').hidden = false;
+        });
+
+        fetch(`${API_URL}/admin/setup/status`).then(res => res.json()).then(data => {
+            document.getElementById('bootstrapAdminLink').hidden = !data.setup_required;
+        }).catch(() => {});
     </script>
 </body>
 </html>

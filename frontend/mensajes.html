@@ -9,9 +9,9 @@
     <link rel="stylesheet" href="css/style.css">
     <style>
         .avatar-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; }
-        .chat-box { height: calc(100vh - 365px); min-height: 220px; overflow-y: auto; background-color: #f8f9fa; }
-        .contact-item:hover { background-color: #f1f3f5; cursor: pointer; }
-        .contact-item.active { background-color: #e9ecef; border-left: 4px solid #0d6efd; }
+        .chat-box { height: calc(100vh - 365px); min-height: 220px; overflow-y: auto; background-color: #f3f6fb; }
+        .contact-item:hover { background-color: #edf3fb; cursor: pointer; }
+        .contact-item.active { background-color: #eaf1fb; border-left: 4px solid #2557a7; }
     </style>
 </head>
 <body>
@@ -52,6 +52,11 @@
             </nav>
 
             <div class="container-fluid p-4">
+                <div class="page-intro mb-4">
+                    <span class="page-kicker">COMUNICACIÓN</span>
+                    <h3 class="fw-bold mb-1">Mensajes y contactos</h3>
+                    <p class="text-muted mb-0">Coordina tus asesorías y mantén tus conversaciones organizadas.</p>
+                </div>
                 <div class="row g-4">
                     <!-- PANEL IZQUIERDO -->
                     <div class="col-md-4">
@@ -203,7 +208,7 @@
             document.getElementById('lblUsuario').textContent = `👤 ${usuarioActual.nombre}`;
             document.getElementById('lblMiCodigo').textContent = `Mi ID: ${usuarioActual.codigo_unico || 'Cargando...'}`;
             const btnNav = document.getElementById('btnSesionNav');
-            btnNav.onclick = (e) => { e.preventDefault(); localStorage.removeItem('usuarioActual'); window.location.href = 'index.html'; };
+            btnNav.onclick = (e) => { e.preventDefault(); localStorage.removeItem('usuarioActual'); localStorage.removeItem('tokenSesion'); window.location.href = 'index.html'; };
         }
 
         function mostrarMensaje(titulo, cuerpo) {

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Primer administrador - AulaConnect</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light d-flex align-items-center justify-content-center min-vh-100 p-3">
+    <main class="card card-custom p-4 p-md-5" style="width:100%;max-width:520px">
+        <div class="text-center mb-4"><div class="verification-icon">🛡️</div><span class="page-kicker">CONFIGURACIÓN INICIAL</span><h3 class="fw-bold mb-2">Crear primer administrador</h3><p class="text-muted small mb-0">Este formulario solo funciona mientras la base de datos no tenga ningún administrador.</p></div>
+        <div id="estadoSetup" class="alert d-none" role="status"></div>
+        <form id="formPrimerAdmin">
+            <div class="mb-3"><label class="form-label small fw-semibold" for="setupNombre">Nombre</label><input id="setupNombre" class="form-control" maxlength="100" required></div>
+            <div class="mb-3"><label class="form-label small fw-semibold" for="setupCorreo">Correo electrónico</label><input id="setupCorreo" class="form-control" type="email" maxlength="100" required></div>
+            <div class="mb-3"><label class="form-label small fw-semibold" for="setupPassword">Contraseña</label><input id="setupPassword" class="form-control" type="password" minlength="8" autocomplete="new-password" required><small class="text-muted">Usa al menos 8 caracteres.</small></div>
+            <div class="mb-4"><label class="form-label small fw-semibold" for="setupPasswordConfirmar">Confirmar contraseña</label><input id="setupPasswordConfirmar" class="form-control" type="password" minlength="8" autocomplete="new-password" required></div>
+            <button id="btnCrearAdmin" class="btn btn-primary w-100" type="submit">Crear administrador</button>
+        </form>
+        <a class="d-block text-center mt-3 small text-decoration-none" href="login.html">Volver al inicio de sesión</a>
+    </main>
+    <script>
+        const apiSetup = 'http://localhost:3000/api';
+        const formSetup = document.getElementById('formPrimerAdmin');
+        function avisoSetup(tipo, mensaje) { const el = document.getElementById('estadoSetup'); el.className = `alert alert-${tipo}`; el.textContent = mensaje; el.classList.remove('d-none'); }
+        fetch(`${apiSetup}/admin/setup/status`).then(res => res.json()).then(data => {
+            if (!data.setup_required) { formSetup.hidden = true; avisoSetup('info', 'El primer administrador ya está configurado. Inicia sesión con una cuenta administradora.'); }
+        }).catch(() => avisoSetup('warning', 'No se pudo comprobar el estado. Asegúrate de que el servidor esté iniciado.'));
+        formSetup.addEventListener('submit', async event => {
+            event.preventDefault();
+            const password = document.getElementById('setupPassword').value;
+            if (password !== document.getElementById('setupPasswordConfirmar').value) return avisoSetup('warning', 'Las contraseñas no coinciden.');
+            const button = document.getElementById('btnCrearAdmin'); button.disabled = true; button.textContent = 'Creando…';
+            try {
+                const res = await fetch(`${apiSetup}/admin/setup`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre: document.getElementById('setupNombre').value, correo: document.getElementById('setupCorreo').value, password }) });
+                const data = await res.json();
+                if (!res.ok || !data.success) throw new Error(data.message || 'No se pudo crear el administrador.');
+                formSetup.hidden = true; avisoSetup('success', `${data.message} Después inicia sesión y verifica el código que llegará a ese correo.`);
+            } catch (error) { avisoSetup('danger', error.message); }
+            finally { button.disabled = false; button.textContent = 'Crear administrador'; }
+        });
+    </script>
+</body>
+</html>

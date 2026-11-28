@@ -184,7 +184,7 @@
             const btnNav = document.getElementById('btnSesionNav');
             btnNav.innerHTML = `<span>🚪</span> Cerrar Sesión`;
             btnNav.className = "nav-link-custom text-danger";
-            btnNav.onclick = (e) => { e.preventDefault(); localStorage.removeItem('usuarioActual'); window.location.href = 'index.html'; };
+            btnNav.onclick = (e) => { e.preventDefault(); localStorage.removeItem('usuarioActual'); localStorage.removeItem('tokenSesion'); window.location.href = 'index.html'; };
         }
 
         // Función para limpiar acentos y comparar textos de forma insensible
@@ -355,8 +355,9 @@
                     let botonesAccion = '';
                     if (vistaActual === 'mias') {
                         botonesAccion = `
-                            <button class="btn btn-outline-primary btn-sm w-50" onclick='abrirDetalles(${JSON.stringify(item).replace(/'/g, "&#39;")})'>Ver Asesoría</button>
-                            <a href="publicar.html?editar=${item.id}" class="btn btn-outline-secondary btn-sm w-50 text-center">Editar</a>
+                            <button class="btn btn-outline-primary btn-sm flex-fill" onclick='abrirDetalles(${JSON.stringify(item).replace(/'/g, "&#39;")})'>Ver</button>
+                            <a href="publicar.html?editar=${item.id}" class="btn btn-outline-secondary btn-sm flex-fill text-center">Editar</a>
+                            <button class="btn btn-outline-danger btn-sm flex-fill" onclick="eliminarAsesoria(${Number(item.id)})">Eliminar</button>
                         `;
                     } else {
                         if (usuarioActual.id && usuarioActual.id == item.usuario_id) {
@@ -432,6 +433,20 @@
             document.getElementById('detContenedorHorarios').innerHTML = htmlHorarios;
             
             new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+        }
+
+        async function eliminarAsesoria(id) {
+            if (!confirm('¿Eliminar esta asesoría? También se eliminarán sus solicitudes, reseñas y eventos relacionados.')) return;
+            try {
+                const res = await fetch(`${API_URL}/asesorias/${encodeURIComponent(id)}`, {
+                    method: 'DELETE',
+                    headers: { Authorization: `Bearer ${localStorage.getItem('tokenSesion') || ''}` }
+                });
+                const data = await res.json();
+                if (!res.ok || !data.success) return mostrarMensaje('No se pudo eliminar', data.message || 'Inténtalo de nuevo.');
+                mostrarMensaje('Asesoría eliminada', 'La publicación y sus datos relacionados se eliminaron.');
+                cargarExplorar(document.getElementById('inputBuscar').value);
+            } catch (error) { mostrarMensaje('Error', 'No fue posible conectar con el servidor.'); }
         }
 
         async function cargarReseñasAsesoria(asesoriaId) {

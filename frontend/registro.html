@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear cuenta - AulaConnect</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-light d-flex align-items-center justify-content-center min-vh-100 py-4">
+    <main class="card card-custom p-4 shadow-sm mx-3" style="width:100%;max-width:460px">
+        <div class="text-center mb-4">
+            <a href="index.html" class="text-decoration-none fs-3">🎓</a>
+            <h1 class="h4 fw-bold mt-2">Crear cuenta</h1>
+            <p class="text-muted small mb-0">Únete a AulaConnect para aprender y compartir.</p>
+        </div>
+        <div id="avisoRegistro" class="alert d-none" role="status"></div>
+        <form id="formRegistro">
+            <div class="mb-3"><label class="form-label small fw-semibold" for="registroNombre">Nombre completo</label><input class="form-control" id="registroNombre" name="nombre" maxlength="100" autocomplete="name" required></div>
+            <div class="mb-3"><label class="form-label small fw-semibold" for="registroCorreo">Correo electrónico</label><input class="form-control" type="email" id="registroCorreo" name="correo" maxlength="100" autocomplete="email" required></div>
+            <div class="mb-3"><label class="form-label small fw-semibold" for="registroPassword">Contraseña</label><input class="form-control" type="password" id="registroPassword" name="password" minlength="8" autocomplete="new-password" required><div class="form-text">Usa al menos 8 caracteres.</div></div>
+            <div class="row g-3 mb-3">
+                <div class="col-md-8"><label class="form-label small fw-semibold" for="registroCarrera">Carrera <span class="text-muted fw-normal">(opcional)</span></label><input class="form-control" id="registroCarrera" name="carrera" maxlength="100"></div>
+                <div class="col-md-4"><label class="form-label small fw-semibold" for="registroSemestre">Semestre</label><input class="form-control" type="number" id="registroSemestre" name="semestre" min="1" max="20"></div>
+            </div>
+            <button id="btnRegistro" class="btn btn-primary w-100" type="submit">Crear cuenta</button>
+        </form>
+        <p class="text-center small mt-3 mb-0">¿Ya tienes cuenta? <a href="login.html" class="fw-semibold text-decoration-none">Inicia sesión</a></p>
+    </main>
+    <script>
+        const API_URL = 'http://localhost:3000/api';
+        const form = document.getElementById('formRegistro');
+        const aviso = document.getElementById('avisoRegistro');
+        function mostrarAviso(tipo, mensaje) {
+            aviso.className = `alert alert-${tipo}`;
+            aviso.textContent = mensaje;
+            aviso.classList.remove('d-none');
+        }
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            const boton = document.getElementById('btnRegistro');
+            boton.disabled = true;
+            boton.textContent = 'Creando cuenta…';
+            const semestre = document.getElementById('registroSemestre').value;
+            const datos = {
+                nombre: document.getElementById('registroNombre').value.trim(),
+                correo: document.getElementById('registroCorreo').value.trim(),
+                password: document.getElementById('registroPassword').value,
+                carrera: document.getElementById('registroCarrera').value.trim(),
+                semestre: semestre ? Number(semestre) : null
+            };
+            try {
+                const respuesta = await fetch(`${API_URL}/registro`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(datos)
+                });
+                const resultado = await respuesta.json();
+                if (!respuesta.ok || !resultado.success) throw new Error(resultado.message || 'No se pudo crear la cuenta.');
+                form.reset();
+                mostrarAviso('success', 'Tu cuenta quedó creada. Ahora inicia sesión; enviaremos un código de confirmación a tu correo.');
+                window.setTimeout(() => { window.location.href = 'login.html'; }, 2200);
+            } catch (error) {
+                mostrarAviso('danger', error.message || 'No se pudo conectar con el servidor.');
+                boton.disabled = false;
+                boton.textContent = 'Crear cuenta';
+            }
+        });
+    </script>
+</body>
+</html>

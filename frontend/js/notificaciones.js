@@ -6,12 +6,18 @@
     const areaUsuario = document.getElementById('areaUsuarioSesion');
     if (!usuario || !usuario.id || !areaUsuario) return;
 
+    const enlaceCerrarSesion = document.getElementById('btnSesionNav');
+    if (enlaceCerrarSesion) enlaceCerrarSesion.addEventListener('click', () => {
+        const token = localStorage.getItem('tokenSesion');
+        if (token) fetch(`${API_URL}/logout`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+    }, true);
+
     areaUsuario.classList.add('d-flex', 'align-items-center', 'gap-2');
 
     const estilos = document.createElement('style');
     estilos.textContent = `
-        @keyframes avisoCampana { 0%,100% { box-shadow: 0 0 0 0 rgba(255,193,7,.4) } 50% { box-shadow: 0 0 0 6px rgba(255,193,7,0) } }
-        #btnNotificaciones.tiene-notificaciones { background:#ffc107; border-color:#ffc107; color:#212529; animation:avisoCampana 1.8s infinite; }
+        @keyframes avisoCampana { 0%,100% { box-shadow: 0 0 0 0 rgba(37,87,167,.35) } 50% { box-shadow: 0 0 0 6px rgba(37,87,167,0) } }
+        #btnNotificaciones.tiene-notificaciones { background:#2557a7; border-color:#2557a7; color:#fff; animation:avisoCampana 1.8s infinite; }
         #panelNotificaciones { position:absolute; top:calc(100% + 10px); right:0; z-index:1080; width:min(360px, calc(100vw - 28px)); max-height: min(420px, calc(100vh - 100px)); display:flex; flex-direction:column; overflow:hidden; background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 12px 32px rgba(15,23,42,.18); }
         #panelNotificaciones[hidden] { display:none; }
         #listaNotificaciones { overflow-y:auto; }
@@ -62,6 +68,23 @@
     nombre.textContent = usuario.nombre || 'Mi perfil';
     enlacePerfil.append(avatar, nombre);
     areaUsuario.appendChild(enlacePerfil);
+
+    const menu = document.querySelector('#sidebar-wrapper .sidebar-menu');
+    const esAdmin = String(usuario.rol || '').trim().toLowerCase() === 'admin';
+    if (menu && !esAdmin) menu.querySelectorAll('a[href="admin.html"]').forEach(enlace => enlace.remove());
+    if (esAdmin) {
+        if (menu && !menu.querySelector('a[href="admin.html"]')) {
+            const enlaceAdmin = document.createElement('a');
+            enlaceAdmin.href = 'admin.html';
+            enlaceAdmin.className = `nav-link-custom${location.pathname.endsWith('/admin.html') ? ' active' : ''}`;
+            enlaceAdmin.innerHTML = '<span>🛡️</span> Administración';
+            const cierreSesion = menu.querySelector('#btnSesionNav');
+            if (cierreSesion) menu.insertBefore(enlaceAdmin, cierreSesion);
+            else menu.appendChild(enlaceAdmin);
+        }
+        const enlaceAdmin = menu && menu.querySelector('a[href="admin.html"]');
+        if (enlaceAdmin) enlaceAdmin.hidden = false;
+    }
 
     function actualizarBoton(cantidad) {
         boton.classList.toggle('tiene-notificaciones', cantidad > 0);

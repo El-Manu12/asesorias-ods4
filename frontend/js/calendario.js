@@ -23,11 +23,11 @@
         .calendario-semana,.calendario-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
         .calendario-semana div{text-align:center;font-size:.75rem;color:#6b7280;padding:5px 0}
         .calendario-dia{min-height:62px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;text-align:left;padding:6px;position:relative}
-        .calendario-dia:hover{background:#eff6ff;border-color:#93c5fd}
+        .calendario-dia:hover{background:#edf3fb;border-color:#a9bfdf}
         .calendario-dia.otro-mes{color:#9ca3af;background:#f9fafb}
-        .calendario-dia.seleccionado{border:2px solid #2563eb;background:#eff6ff}
-        .calendario-dia.hoy .numero-dia{font-weight:800;color:#2563eb}
-        .punto-evento{display:inline-block;width:7px;height:7px;border-radius:50%;background:#16a34a;margin:2px}
+        .calendario-dia.seleccionado{border:2px solid #2557a7;background:#edf3fb}
+        .calendario-dia.hoy .numero-dia{font-weight:800;color:#2557a7}
+        .punto-evento{display:inline-block;width:7px;height:7px;border-radius:50%;background:#2557a7;margin:2px}
         .evento-calendario{border:1px solid #e5e7eb;border-radius:8px;padding:9px 10px;margin-bottom:8px;background:#fff}
         @media(max-width:767px){.calendario-dia{min-height:48px;padding:4px}.calendario-grid{gap:2px}}
     `;
